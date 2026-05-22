@@ -25,6 +25,7 @@ class Install extends Command
         }
 
         $this->publishFiles($output);
+        $this->publishRouteCode($output);
 
         $output->writeln('<info>[sayagi]</info> Installation complete.');
         return Command::SUCCESS;
@@ -137,6 +138,28 @@ class Install extends Command
             }
             $this->copyFile($configFile, $pluginConfigDir . '/' . basename($configFile), $output);
         }
+    }
+
+    protected function publishRouteCode(OutputInterface $output): void
+    {
+        $routeFile = base_path() . '/config/route.php';
+
+        if (!is_file($routeFile)) {
+            $output->writeln('<comment>[sayagi]</comment> config/route.php not found, skipping route injection.');
+            return;
+        }
+
+        $contents = file_get_contents($routeFile);
+        $snippet  = '\\Yllumi\\Sayagi\\PageRouter::init();';
+
+        if (str_contains($contents, $snippet)) {
+            $output->writeln('<comment>[sayagi]</comment> Skipped (exists): PageRouter::init() already in config/route.php');
+            return;
+        }
+
+        $addition = "\n// Page based route\n\\Yllumi\\Sayagi\\PageRouter::init();\n";
+        file_put_contents($routeFile, rtrim($contents) . $addition);
+        $output->writeln('<info>[sayagi]</info> Published: PageRouter::init() added to config/route.php');
     }
 
     protected function copyFile(string $src, string $dest, OutputInterface $output): void
