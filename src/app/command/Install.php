@@ -26,6 +26,7 @@ class Install extends Command
 
         $this->publishFiles($output);
         $this->publishRouteCode($output);
+        $this->renameIndexController($output);
 
         $output->writeln('<info>[sayagi]</info> Installation complete.');
         return Command::SUCCESS;
@@ -138,6 +139,19 @@ class Install extends Command
             }
             $this->copyFile($configFile, $pluginConfigDir . '/' . basename($configFile), $output);
         }
+    }
+
+    protected function renameIndexController(OutputInterface $output): void
+    {
+        $file = base_path() . '/app/controller/IndexController.php';
+
+        if (!is_file($file)) {
+            $output->writeln('<comment>[sayagi]</comment> IndexController.php not found, skipping.');
+            return;
+        }
+
+        rename($file, $file . '.bak');
+        $output->writeln('<info>[sayagi]</info> Renamed: app/controller/IndexController.php → IndexController.php.bak');
     }
 
     protected function publishRouteCode(OutputInterface $output): void
