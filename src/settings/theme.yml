@@ -1,0 +1,101 @@
+name: Theme
+slug: theme
+menu_position: 20
+setting:
+  main_theme:
+    field: main_theme
+    label: Frontend Theme
+    form: select
+    default: mobilekit
+    options:
+      mobilekit: mobilekit
+      pesantren: pesantren
+      magazine: magazine
+      cleanblog: cleanblog
+  homepage:
+    field: homepage
+    label: Homepage
+    form: text
+    default: home
+  admin_bgcolor:
+    field: admin_bgcolor
+    label: Admin Background Color
+    form: color
+    default: "#52BCD3"
+  admin_bg_css:
+    field: admin_bg_css
+    label: Admin Background Custom CSS
+    form: code
+    mode: css
+    height: 200
+  admin_logo_width:
+    field: admin_logo_width
+    label: Admin Logo Width
+    form: text
+    default: 100%
+  color_theme:
+    field: color_theme
+    label: Frontend Color Theme
+    form: color
+    default: "#F44336"
+  highlight_center_bottommenu:
+    field: highlight_center_bottommenu
+    label: Highlight Center Bottommenu
+    form: switcher
+    default: 0
+    options:
+      0: No
+      1: Yes
+  frontend_background:
+    field: frontend_background
+    label: Frontend Background
+    form: image
+  minify_html:
+    field: minify_html
+    label: Minify HTML
+    dev_purpose: true
+    form: switcher
+    default: 1
+    options:
+      0: Off
+      1: On
+  show_profiler:
+    field: show_profiler
+    label: Show Profiler
+    dev_purpose: true
+    form: switcher
+    default: 1
+    options:
+      0: Off
+      1: On
+  enable_pjax_admin:
+    field: enable_pjax_admin
+    label: Enable PJAX for Admin Page (experimental)
+    dev_purpose: true
+    form: switcher
+    default: 0
+    options:
+      0: Off
+      1: On
+  enable_pjax_frontend:
+    field: enable_pjax_frontend
+    label: Enable PJAX for Frontend Page (experimental)
+    dev_purpose: true
+    form: switcher
+    default: 0
+    options:
+      0: Off
+      1: On
+  custom_scripts:
+    field: custom_scripts
+    label: Custom Scripts
+    desc: wajib dibuka dengan tag <code>&lt;script n:syntax="off"&gt;</code>
+    form: textarea
+    default: |
+      <script n:syntax="off">
+
+      </script>
+  gtag_id:
+    field: gtag_id
+    label: Google Tag ID
+    form: text

@@ -1,0 +1,69 @@
+name: Site
+slug: site
+menu_position: 10
+setting:
+  site_title:
+    field: site_title
+    label: Website Title
+    form: text
+    default: MeinCMS
+  site_desc:
+    field: site_desc
+    label: Website Description
+    form: textarea
+  site_logo:
+    field: site_logo
+    label: Site Logo
+    form: image
+  site_logo_monochrome:
+    field: site_logo_monochrome
+    label: Site Logo Monochrome
+    form: image
+  site_logo_small:
+    field: site_logo_small
+    label: Site Logo Small
+    form: image
+  login_cover:
+    field: login_cover
+    label: Login Cover
+    form: image
+  phone:
+    field: phone
+    label: Site Phone
+    form: text
+  address:
+    field: address
+    label: Site Address
+    form: textarea
+  contact:
+    field: contact
+    label: Kontak
+    form: textarea
+  latlong:
+    field: latlong
+    label: Koordinat
+    desc: latitude,longitude (pisahkan dengan koma)
+    form: text
+  currency:
+    field: currency
+    label: Currency
+    form: text
+    default: Rp
+  enable_registration:
+    field: enable_registration
+    label: Enable Public Registration
+    form: switcher
+    default: 0
+    options:
+      0: Off
+      1: On
+  maintenance_mode:
+    field: maintenance_mode
+    label: Enable Maintenance Mode
+    desc: Show under maintenance or coming soon page for public
+    form: select
+    default: off
+    options:
+      off: Off
+      comingsoon: Coming Soon Page
+      maintenance: Under Maintenance Page

@@ -1,0 +1,34 @@
+{
+  "name": "yllumi/sayagi",
+  "type": "composer-plugin",
+  "license": "MIT",
+  "description": "Webman plugin yllumi/sayagi",
+  "require": {
+    "composer-plugin-api": "^2.0",
+    "webman/database": "^2.1",
+    "firebase/php-jwt": "^7.0",
+    "webman/cache": "^2.1",
+    "vlucas/phpdotenv": "^5.6",
+    "guzzlehttp/guzzle": "^7.10",
+    "webman/console": "^2.1",
+    "symfony/yaml": "^7.0",
+    "webman/redis": "^2.1",
+    "workerman/redis": "^2.0",
+    "robmorgan/phinx": "^0.16.10",
+    "phpmailer/phpmailer": "^7.0"
+  },
+  "require-dev": {
+    "composer/composer": "^2.0"
+  },
+  "extra": {
+    "class": "Yllumi\\Sayagi\\ComposerPlugin"
+  },
+  "autoload": {
+    "psr-4": {
+      "Yllumi\\Sayagi\\": "src"
+    },
+    "files": [
+      "src/app/helper/common.php"
+    ]
+  }
+}

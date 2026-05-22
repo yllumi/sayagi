@@ -1,0 +1,102 @@
+-
+  id: menu_69d223a8a20be8
+  label: Dashboard
+  module: dashboard
+  submodule: null
+  icon: 'bi bi-grid-fill'
+  url: /panel
+  target: null
+  privilege: dashboard.read
+  children: {  }
+-
+  id: menu_69d223a8a20de7
+  label: Mahasiswa
+  module: mahasiswa
+  submodule: null
+  icon: 'bi bi-person'
+  url: /app/mahasiswa
+  target: null
+  privilege: role.read
+  children: {  }
+-
+  id: menu_69d223a8a20e66
+  label: Pengguna
+  module: user
+  submodule: null
+  icon: 'bi bi-lock-fill'
+  url: '#'
+  target: null
+  privilege: user.read
+  children:
+    -
+      id: menu_69d223a8a20ef4
+      label: Users
+      module: user
+      submodule: user
+      icon: 'bi bi-people'
+      url: /panel/user
+      target: null
+      privilege: user.read
+    -
+      id: menu_69d223a8a20f62
+      label: Roles
+      module: user
+      submodule: role
+      icon: 'bi bi-person-gear'
+      url: /panel/role
+      target: null
+      privilege: role.read
+-
+  id: menu_69d223a8a20fe3
+  label: Configuration
+  module: configuration
+  submodule: null
+  icon: 'bi bi-gear'
+  url: '#'
+  target: null
+  children:
+    -
+      id: menu_69d223a8a21064
+      label: Settings
+      module: configuration
+      submodule: setting
+      icon: 'bi bi-sliders'
+      url: /panel/setting
+      target: null
+      privilege: setting.update
+-
+  id: menu_69d223a8a210e3
+  label: Development
+  module: development
+  submodule: null
+  icon: 'bi bi-code-slash'
+  url: '#'
+  target: null
+  children:
+    -
+      id: menu_69d223a8a21249
+      label: 'Panel Menu'
+      module: development
+      submodule: panelmenu
+      icon: 'bi bi-list-nested'
+      url: /panel/panelmenu
+      target: null
+      privilege: panelmenu.modify
+    -
+      id: menu_69d223a8a21153
+      label: Privilege
+      module: development
+      submodule: privilege
+      icon: 'bi bi-shield-lock'
+      url: /panel/privilege
+      target: null
+      privilege: privilege.read
+    -
+      id: menu_69d223a8a211b7
+      label: Redis
+      module: development
+      submodule: redis
+      icon: 'bi bi-memory'
+      url: /panel/redis
+      target: null
+      privilege: redis.manage

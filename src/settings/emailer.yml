@@ -1,0 +1,59 @@
+name: Emailer
+slug: emailer
+menu_position: 30
+setting:
+  use_mailcatcher:
+    field: use_mailcatcher
+    label: Use Mailcatcher for sandboxing in local
+    form: select
+    options:
+      no: No
+      yes: Yes
+    default: yes
+    dev_purpose: true
+  send_by_queue:
+    field: send_by_queue
+    label: Send Email by Queue
+    desc: Set enable if beanstalk already set
+    form: select
+    options:
+      no: Disable
+      yes: Enable
+    default: no
+    dev_purpose: true
+  debug_emailer:
+    field: debug_emailer
+    label: Debug Emailer
+    desc: Disable to get clean output especially for API
+    form: select
+    options:
+      no: Disable
+      yes: Enable
+    default: no
+    dev_purpose: true
+  smtp_host:
+    field: smtp_host
+    label: SMTP Host, default to localhost
+    form: text
+    default: localhost
+  smtp_port:
+    field: smtp_port
+    label: SMTP Port, default to 1025
+    form: number
+    default: 1025
+  smtp_username:
+    field: smtp_username
+    label: SMTP Username
+    form: text
+  smtp_password:
+    field: smtp_password
+    label: SMTP Password
+    form: mask
+  email_from:
+    field: email_from
+    label: Email From Address
+    form: email
+  sender_name:
+    field: sender_name
+    label: Email Sender Name
+    form: text
