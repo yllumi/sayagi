@@ -47,7 +47,7 @@ function loginForm() {
     <!-- Header -->
     <div class="auth-header">
         <div class="auth-logo">
-            <img src="https://image.web.id/images/clipboard-image-1753328088.png" style="width: 250px; height: auto;">
+            <img src="<?= setting('site.site_logo') ?>" style="width: 250px; height: auto;">
         </div>
         <h1>Masuk ke Akun</h1>
         <p>Masukkan kredensial Anda untuk melanjutkan</p>
@@ -104,15 +104,17 @@ function loginForm() {
 
     </form>
 
-    <?php if (getenv('app.enable_registration') === 'true'): ?>
+    <?php if (setting('site.enable_registration') === 'on'): ?>
         <div class="auth-divider">atau</div>
         <div class="auth-footer">
             Belum punya akun? <a href="<?= site_url('/panel/auth/register') ?>">Daftar di sini</a>
         </div>
     <?php endif; ?>
 
+    <?php if (setting('site.powered_by')): ?>
     <div class="auth-footer">
-        Powered by WebmanPanel
+        Powered by <?= setting('site.powered_by') ?> 
     </div>
+    <?php endif; ?>
 
 </div>

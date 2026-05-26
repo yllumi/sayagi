@@ -55,8 +55,8 @@ setting:
     form: switcher
     default: 0
     options:
-      0: Off
-      1: On
+      off: Off
+      on: On
   maintenance_mode:
     field: maintenance_mode
     label: Enable Maintenance Mode
@@ -67,3 +67,12 @@ setting:
       off: Off
       comingsoon: Coming Soon Page
       maintenance: Under Maintenance Page
+  powered_by:
+    field: powered_by
+    label: Powered By
+    form: text
+  auth_quotes:
+    field: auth_quotes
+    label: Authentication Page Quotes
+    desc: Show random quotes on login and registration page. Use format "Quote - Author". Separate with new line.
+    form: code
