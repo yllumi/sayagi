@@ -3,7 +3,13 @@
         <div class="sidebar-header position-relative">
             <div class="d-flex justify-content-center align-items-center">
                 <div class="logo">
-                    <a href="<?= site_url('panel') ?>"><?= setting('site.site_title') ?></a>
+                    <a href="<?= site_url('panel') ?>">
+                        <?php if(setting('site.site_logo')) : ?>
+                            <img src="<?= setting('site.site_logo') ?>" alt="Logo" width="100%">
+                        <?php else : ?>
+                            <?= setting('site.site_title') ?>
+                        <?php endif; ?>
+                    </a>
                 </div>
 
                 <div class="sidebar-toggler x">
