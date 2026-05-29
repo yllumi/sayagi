@@ -13,19 +13,4 @@ class IndexController extends AdminController
         return redirect(setting('site.default_admin_page') ?? '/panel/dashboard');
     }
 
-    public function testSendEmail(Request $request)
-    {
-        $emailSender = new \Yllumi\Sayagi\libraries\EmailSender();
-
-        try {
-            $emailSender->sendEmail(
-                'recipient@example.com',
-                'Test Email',
-                '<p>This is a test email.</p>'
-            );
-        } catch (\Exception $e) {
-            // Handle the exception
-        }
-    }
-
 }

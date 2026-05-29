@@ -12,21 +12,21 @@ class EmailSender
 
     public function __construct()
     {
-        $this->mailer = new PHPMailer(true);
+        $this->mailer = new PHPMailer(setting('emailer.debug_emailer') ?? false); // Enable exceptions if not using MailHog
         
         $this->mailer->SMTPDebug = SMTP::DEBUG_SERVER; 
         $this->mailer->isSMTP();
         $this->mailer->CharSet   = 'UTF-8';
-        $this->mailer->Port      = (int)(getenv('mail.smtp_port') ?: 1025);
+        $this->mailer->Port      = (int)(setting('emailer.smtp_port') ?: 1025);
         $this->mailer->SMTPAuth  = $this->mailer->Port == 1025 ? false : true;
-        $this->mailer->Host      = getenv('mail.smtp_host')     ?: 'localhost';
-        $this->mailer->Username  = getenv('mail.smtp_username') ?: '';
-        $this->mailer->Password  = getenv('mail.smtp_password') ?: '';
+        $this->mailer->Host      = setting('emailer.smtp_host')     ?: 'localhost';
+        $this->mailer->Username  = setting('emailer.smtp_username') ?: '';
+        $this->mailer->Password  = setting('emailer.smtp_password') ?: '';
         $this->mailer->SMTPSecure = $this->mailer->Port == 1025 ? false : PHPMailer::ENCRYPTION_SMTPS;
 
         $this->mailer->setFrom(
-            getenv('mail.from_address') ?: 'no-reply@example.com',
-            getenv('mail.from_name')    ?: 'Panel'
+            setting('emailer.email_from') ?: 'no-reply@example.com',
+            setting('emailer.sender_name')    ?: 'Panel'
         );
     }
 
