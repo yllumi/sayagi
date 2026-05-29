@@ -10,9 +10,7 @@ class IndexController extends AdminController
     #[RequirePrivilege('dashboard.read')]
     public function index(Request $request)
     {
-        $data['page_title'] = 'Dashboard';
-
-        return render('index/index', $data);
+        return redirect(setting('site.default_admin_page') ?? '/panel/dashboard');
     }
 
     public function testSendEmail(Request $request)

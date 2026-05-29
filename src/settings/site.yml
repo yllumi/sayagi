@@ -76,3 +76,9 @@ setting:
     label: Authentication Page Quotes
     desc: Show random quotes on login and registration page. Use format "Quote - Author". Separate with new line.
     form: code
+  default_admin_page:
+    field: default_admin_page
+    label: Default Admin Page
+    desc: Set default admin page path when login to admin panel. Default is /panel/dashboard.
+    form: text
+    default: /panel/dashboard

@@ -3,6 +3,7 @@
 use Webman\Route;
 use Yllumi\Sayagi\app\controller\AuthController;
 use Yllumi\Sayagi\app\controller\IndexController;
+use Yllumi\Sayagi\app\controller\DashboardController;
 use Yllumi\Sayagi\app\controller\UserController;
 use Yllumi\Sayagi\app\controller\RoleController;
 use Yllumi\Sayagi\app\controller\PrivilegeController;
@@ -22,6 +23,7 @@ Route::post('/panel/auth/reset',    [AuthController::class, 'doReset']);
 
 // Dashboard
 Route::get('/panel', [IndexController::class, 'index']);
+Route::get('/panel/dashboard', [DashboardController::class, 'index']);
 
 // User CRUD
 Route::get('/panel/user',  [UserController::class, 'index']);
