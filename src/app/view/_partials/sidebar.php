@@ -21,6 +21,8 @@
         <div class="sidebar-menu">
             <ul class="menu">
                 <?php foreach (sidebarMenus() as $menu) : ?>
+                    <?php if($menu['label'] == '_bottommenu') continue; ?>
+                    
                     <li class="sidebar-item <?= $menu['module'] == $module ? 'active submenu-open' : '' ?> <?= isset($menu['children']) && count($menu['children']) > 0 ? 'has-sub' : '' ?>">
                         <a href="<?= $menu['url'] ? site_url($menu['url']) : '#' ?>" target="<?= $menu['target'] ?? '_self' ?>" class='sidebar-link'>
                             <i class="<?= $menu['icon'] ?>"></i>

@@ -39,7 +39,7 @@
                 </ul>
 
                 <!-- Tab panels -->
-                <div class="tab-content flex-grow-1 bg-white border border-start-0 p-4" style="min-width:0">
+                <div class="tab-content card flex-grow-1 border border-start-0 p-4" style="min-width:0">
                     <?php foreach ($groups as $i => $group): ?>
                         <div
                             id="tab-panel-<?= htmlspecialchars($group['slug']) ?>"

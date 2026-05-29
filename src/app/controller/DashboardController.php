@@ -11,7 +11,7 @@ class DashboardController extends AdminController
     protected $data = [
         'page_title' => '',
         'module' => 'dashboard',
-        'submodule' => '',
+        'submodule' => 'dashboard',
     ];
 
     #[RequirePrivilege('dashboard.read')]

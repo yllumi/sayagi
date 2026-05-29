@@ -40,6 +40,7 @@
             </div>
 
             <?= cell('_partials/footer', [], 'yllumi/sayagi') ?>
+            <?= cell('_partials/bottommenu', ['module' => $module ?? '', 'submodule' => $submodule ?? ''], 'yllumi/sayagi') ?>
         </div>
 
     </div>
