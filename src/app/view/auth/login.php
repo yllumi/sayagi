@@ -104,10 +104,10 @@ function loginForm() {
 
     </form>
 
-    <?php if (setting('site.enable_registration') === 'on'): ?>
+    <?php if (setting('user.enable_registration') === 'on'): ?>
         <div class="auth-divider">atau</div>
         <div class="auth-footer">
-            Belum punya akun? <a href="<?= site_url('/panel/auth/register') ?>">Daftar di sini</a>
+            Belum punya akun? <a href="<?= site_url(setting('user.registration_url')) ?>">Daftar di sini</a>
         </div>
     <?php endif; ?>
 

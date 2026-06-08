@@ -55,6 +55,8 @@ if (!function_exists('setting')) {
     /**
      * Retrieve a setting value from cache.
      * Usage: setting('site.site_title')  →  returns the value or $default.
+     * Falls back to the default value defined in the YAML config file if
+     * the setting has never been saved to the database.
      */
     function setting(string $key, mixed $default = null): mixed
     {
@@ -66,7 +68,21 @@ if (!function_exists('setting')) {
 
         $fields = \Yllumi\Sayagi\app\controller\SettingController::getGroupFromCache($group);
 
-        return $fields[$name] ?? $default;
+        // Return DB/cache value if it exists
+        if (array_key_exists($name, $fields)) {
+            return $fields[$name];
+        }
+
+        // Fallback: read default from YAML config
+        $yamlFile = base_path('config/plugin/panel/settings/' . $group . '.yml');
+        if (file_exists($yamlFile)) {
+            $cfg = \Symfony\Component\Yaml\Yaml::parseFile($yamlFile);
+            if (isset($cfg['setting'][$name]['default'])) {
+                return (string) $cfg['setting'][$name]['default'];
+            }
+        }
+
+        return $default;
     }
 }
 

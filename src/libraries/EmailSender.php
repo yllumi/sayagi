@@ -12,21 +12,31 @@ class EmailSender
 
     public function __construct()
     {
-        $this->mailer = new PHPMailer(setting('emailer.debug_emailer') ?? false); // Enable exceptions if not using MailHog
+        $this->mailer = new PHPMailer(setting('emailer.debug_emailer') === 'yes');
         
-        $this->mailer->SMTPDebug = SMTP::DEBUG_SERVER; 
         $this->mailer->isSMTP();
-        $this->mailer->CharSet   = 'UTF-8';
-        $this->mailer->Port      = (int)(setting('emailer.smtp_port') ?: 1025);
-        $this->mailer->SMTPAuth  = $this->mailer->Port == 1025 ? false : true;
-        $this->mailer->Host      = setting('emailer.smtp_host')     ?: 'localhost';
-        $this->mailer->Username  = setting('emailer.smtp_username') ?: '';
-        $this->mailer->Password  = setting('emailer.smtp_password') ?: '';
-        $this->mailer->SMTPSecure = $this->mailer->Port == 1025 ? false : PHPMailer::ENCRYPTION_SMTPS;
+        $this->mailer->CharSet = 'UTF-8';
+
+        if (setting('emailer.use_mailcatcher') === 'yes') {
+            // Mailcatcher defaults — no auth, no encryption
+            $this->mailer->SMTPDebug  = SMTP::DEBUG_SERVER;
+            $this->mailer->Host       = 'localhost';
+            $this->mailer->Port       = 1025;
+            $this->mailer->SMTPAuth   = false;
+            $this->mailer->SMTPSecure = false;
+        } else {
+            $this->mailer->SMTPDebug  = setting('emailer.debug_emailer') === 'yes' ? SMTP::DEBUG_SERVER : SMTP::DEBUG_OFF;
+            $this->mailer->Host       = setting('emailer.smtp_host')     ?: 'localhost';
+            $this->mailer->Port       = (int)(setting('emailer.smtp_port') ?: 587);
+            $this->mailer->SMTPAuth   = true;
+            $this->mailer->Username   = setting('emailer.smtp_username') ?: '';
+            $this->mailer->Password   = setting('emailer.smtp_password') ?: '';
+            $this->mailer->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        }
 
         $this->mailer->setFrom(
             setting('emailer.email_from') ?: 'no-reply@example.com',
-            setting('emailer.sender_name')    ?: 'Panel'
+            setting('emailer.sender_name') ?: 'Panel'
         );
     }
 

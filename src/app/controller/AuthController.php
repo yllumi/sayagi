@@ -68,7 +68,7 @@ class AuthController extends AdminController
     public function register(Request $request)
     {
         // Show 404 page if registration is disabled
-        if(getenv('app.enable_registration') !== 'true') {
+        if (setting('user.enable_registration') !== 'on') {
             return view('404')->withStatus(404);
         }
 
@@ -76,7 +76,7 @@ class AuthController extends AdminController
             return redirect(site_url('panel'));
         }
         $data['page_title'] = 'Daftar Akun';
-        return render('auth/register', $data, 'auth');
+        return render('auth/register', $data, null, 'auth');
     }
 
     // ── POST /panel/auth/register ─────────────────────────
@@ -113,26 +113,35 @@ class AuthController extends AdminController
         $Phpass = new \Yllumi\Sayagi\libraries\Phpass();
         $hashed = $Phpass->HashPassword($password);
 
+        $defaultRole = setting('user.user_registration_role', 'member');
+        // Resolve role name to role_id
+        $role = Db::table('mein_roles')->where('name', $defaultRole)->first();
+        $roleId = $role ? $role->id : 0;
+
+        $defaultStatus = setting('user.user_registration_status', 'active');
+
         Db::table('mein_users')->insert([
             'name'       => $name,
             'email'      => $email,
             'username'   => $username,
             'password'   => $hashed,
-            'status'     => 'active',
+            'role_id'    => $roleId,
+            'status'     => $defaultStatus,
             'created_at' => date('Y-m-d H:i:s'),
             'updated_at' => date('Y-m-d H:i:s'),
         ]);
 
-        return json(['success' => 1, 'message' => 'Akun berhasil dibuat. Silakan login.', 'redirect' => site_url('panel/auth/login')]);
+        return json(['success' => 1, 'message' => 'Akun berhasil dibuat. Silakan login.', 'redirect' => site_url(setting('user.login_url'))]);
     }
 
     // ── GET /panel/auth/forgot ─────────────────────────────
     public function forgot(Request $request)
     {
         if (session('user')) return redirect(site_url('panel'));
-        $data['page_title']       = 'Lupa Password';
-        $data['recaptcha_site_key'] = getenv('recaptcha.site_key') ?: '';
-        return render('auth/forgot', $data, 'auth');
+        $data['page_title']          = 'Lupa Password';
+        $data['recaptcha_version']  = \Yllumi\Sayagi\libraries\Recaptcha::version();
+        $data['recaptcha_site_key'] = \Yllumi\Sayagi\libraries\Recaptcha::siteKey();
+        return render('auth/forgot', $data, null, 'auth');
     }
 
     // ── POST /panel/auth/forgot ────────────────────────────
@@ -146,15 +155,8 @@ class AuthController extends AdminController
         }
 
         // Verify reCAPTCHA v3
-        $secretKey = getenv('recaptcha.secret_key') ?: '';
-        if ($secretKey) {
-            $verify = json_decode(file_get_contents(
-                'https://www.google.com/recaptcha/api/siteverify?secret=' .
-                urlencode($secretKey) . '&response=' . urlencode($recaptchaToken)
-            ), true);
-            if (empty($verify['success']) || ($verify['score'] ?? 0) < 0.5) {
-                return json(['success' => 0, 'message' => 'Verifikasi reCAPTCHA gagal. Silakan coba lagi.']);
-            }
+        if (!\Yllumi\Sayagi\libraries\Recaptcha::verify($recaptchaToken)) {
+            return json(['success' => 0, 'message' => 'Verifikasi reCAPTCHA gagal. Silakan coba lagi.']);
         }
 
         $user = Db::table('mein_users')
@@ -201,7 +203,7 @@ class AuthController extends AdminController
 
         $data['page_title'] = 'Reset Password';
         $data['token']      = htmlspecialchars($token);
-        return render('auth/reset', $data, 'auth');
+        return render('auth/reset', $data, null, 'auth');
     }
 
     // ── POST /panel/auth/reset ─────────────────────────────

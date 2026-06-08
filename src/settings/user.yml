@@ -1,0 +1,51 @@
+name: User
+slug: user
+setting:
+  enable_registration:
+    field: enable_registration
+    label: Enable Public Registration
+    form: switcher
+    default: on
+    options:
+      off: Off
+      on: On
+  registration_url:
+    field: registration_url
+    label: Registration URL
+    form: text
+    default: /panel/auth/register
+  user_registration_role:
+    field: user_registration_role
+    label: User Registration Role
+    form: text
+    default: member
+  user_registration_status:
+    field: user_registration_status
+    label: User Registration Default Status
+    form: switcher
+    default: active
+    options:
+      active: Active
+      inactive: Inactive
+  login_url:
+    field: login_url
+    label: Login URL
+    form: text
+    default: /panel/auth/login
+  recaptcha_version:
+    field: recaptcha_version
+    label: reCAPTCHA Version
+    form: select
+    default: off
+    options:
+      off: Off
+      v2: reCAPTCHA v2
+      v3: reCAPTCHA v3
+  recaptcha_site_key:
+    field: recaptcha_site_key
+    label: reCAPTCHA Site Key
+    form: text
+  recaptcha_secret_key:
+    field: recaptcha_secret_key
+    label: reCAPTCHA Secret Key
+    form: text

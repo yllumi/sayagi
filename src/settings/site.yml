@@ -49,14 +49,6 @@ setting:
     label: Currency
     form: text
     default: Rp
-  enable_registration:
-    field: enable_registration
-    label: Enable Public Registration
-    form: switcher
-    default: 0
-    options:
-      off: Off
-      on: On
   maintenance_mode:
     field: maintenance_mode
     label: Enable Maintenance Mode

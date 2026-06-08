@@ -17,6 +17,7 @@ class Update extends Install
         $output->writeln('<info>[sayagi]</info> Starting update...');
 
         $this->publishFiles($output);
+        $this->syncSettings($output);
 
         if (!$this->runPackageMigrations($output)) {
             return Command::FAILURE;
@@ -24,6 +25,32 @@ class Update extends Install
 
         $output->writeln('<info>[sayagi]</info> Update complete.');
         return Command::SUCCESS;
+    }
+
+    /**
+     * Force-overwrite settings YAML files from package into project config.
+     * Unlike publishFiles() which skips existing files, this always updates.
+     */
+    protected function syncSettings(OutputInterface $output): void
+    {
+        $srcDir  = dirname(__DIR__, 2) . '/settings';
+        $destDir = base_path('config/plugin/panel/settings');
+
+        if (!is_dir($srcDir)) {
+            return;
+        }
+
+        if (!is_dir($destDir)) {
+            mkdir($destDir, 0755, true);
+        }
+
+        foreach (glob($srcDir . '/*.yml') ?: [] as $srcFile) {
+            $basename = basename($srcFile);
+            $destFile = $destDir . '/' . $basename;
+
+            copy($srcFile, $destFile);
+            $output->writeln('<info>[sayagi]</info> Synced: config/plugin/panel/settings/' . $basename);
+        }
     }
 
     protected function runPackageMigrations(OutputInterface $output): bool

@@ -35,6 +35,17 @@ class SettingController extends AdminController
 
         $rows = self::getGroupFromCache($group);
 
+        // Merge default values from YAML for fields that have no DB value yet
+        $yamlFile = base_path('config/plugin/panel/settings/' . $group . '.yml');
+        if (file_exists($yamlFile)) {
+            $cfg = Yaml::parseFile($yamlFile);
+            foreach ($cfg['setting'] ?? [] as $fieldKey => $fieldDef) {
+                if (!array_key_exists($fieldKey, $rows) && isset($fieldDef['default'])) {
+                    $rows[$fieldKey] = (string) $fieldDef['default'];
+                }
+            }
+        }
+
         return json(['success' => 1, 'fields' => (object) $rows]);
     }
 

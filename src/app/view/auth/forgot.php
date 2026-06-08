@@ -9,13 +9,18 @@ function forgotForm() {
             this.alertShow = false;
             this.loading   = true;
 
-            // Execute reCAPTCHA v3
-            const siteKey = document.getElementById('recaptchaSiteKey').value;
+            const version  = document.getElementById('recaptchaVersion').value;
+            const siteKey  = document.getElementById('recaptchaSiteKey').value;
             let recaptchaToken = '';
-            if (siteKey) {
+
+            if (version === 'v3' && siteKey) {
                 try {
                     recaptchaToken = await grecaptcha.execute(siteKey, { action: 'forgot_password' });
                 } catch (e) { /* recaptcha unavailable, proceed */ }
+            } else if (version === 'v2') {
+                // v2 checkbox — token is in the auto-generated textarea
+                const el = document.querySelector('#g-recaptcha-response');
+                if (el) recaptchaToken = el.value;
             }
 
             const formData = new FormData(event.target);
@@ -52,10 +57,13 @@ function forgotForm() {
 }
 </script>
 
-<?php if (!empty($recaptcha_site_key)): ?>
+<?php if ($recaptcha_version === 'v3' && !empty($recaptcha_site_key)): ?>
 <script src="https://www.google.com/recaptcha/api.js?render=<?= htmlspecialchars($recaptcha_site_key) ?>" async defer></script>
+<?php elseif ($recaptcha_version === 'v2' && !empty($recaptcha_site_key)): ?>
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
 <?php endif; ?>
 
+<input type="hidden" id="recaptchaVersion" value="<?= htmlspecialchars($recaptcha_version ?? 'off') ?>">
 <input type="hidden" id="recaptchaSiteKey" value="<?= htmlspecialchars($recaptcha_site_key ?? '') ?>">
 
 <div x-data="forgotForm()">
@@ -92,6 +100,12 @@ function forgotForm() {
                     autofocus>
             </div>
         </div>
+
+        <?php if ($recaptcha_version === 'v2' && !empty($recaptcha_site_key)): ?>
+        <div class="form-group" style="display:flex;justify-content:center;margin-bottom:16px;">
+            <div class="g-recaptcha" data-sitekey="<?= htmlspecialchars($recaptcha_site_key) ?>"></div>
+        </div>
+        <?php endif; ?>
 
         <button type="submit" class="btn-login" :disabled="loading">
             <span class="spinner" x-show="loading" style="display:none"></span>

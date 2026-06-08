@@ -14,6 +14,7 @@ use Yllumi\Sayagi\app\controller\EntryController;
 
 Route::get('/panel/auth/login',     [AuthController::class, 'login']);
 Route::post('/panel/auth/login',    [AuthController::class, 'doLogin']);
+Route::get('/panel/auth/register',  [AuthController::class, 'register']);
 Route::post('/panel/auth/register', [AuthController::class, 'doRegister']);
 Route::get('/panel/auth/logout',    [AuthController::class, 'logout']);
 Route::get('/panel/auth/forgot',    [AuthController::class, 'forgot']);
