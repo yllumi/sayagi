@@ -85,7 +85,7 @@ class Recaptcha
             return false;
         }
 
-        $recaptcha = new \ReCaptcha\ReCaptcha($secretKey);
+        $recaptcha = new \ReCaptcha\ReCaptcha($secretKey, new \ReCaptcha\RequestMethod\CurlPost());
 
         if ($version === 'v3') {
             $recaptcha->setScoreThreshold($minScore);
