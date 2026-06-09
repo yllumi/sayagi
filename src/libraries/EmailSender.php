@@ -31,7 +31,7 @@ class EmailSender
             $this->mailer->SMTPAuth   = true;
             $this->mailer->Username   = setting('emailer.smtp_username') ?: '';
             $this->mailer->Password   = setting('emailer.smtp_password') ?: '';
-            $this->mailer->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            $this->mailer->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
         }
 
         $this->mailer->setFrom(
