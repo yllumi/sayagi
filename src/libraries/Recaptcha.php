@@ -85,22 +85,14 @@ class Recaptcha
             return false;
         }
 
-        $response = @file_get_contents(
-            'https://www.google.com/recaptcha/api/siteverify?secret=' .
-            urlencode($secretKey) . '&response=' . urlencode($token)
-        );
-        if ($response === false) {
-            return false;
-        }
-
-        $data = json_decode($response, true);
+        $recaptcha = new \ReCaptcha\ReCaptcha($secretKey);
 
         if ($version === 'v3') {
-            // v3: must pass both success and minimum score
-            return !empty($data['success']) && ($data['score'] ?? 0) >= $minScore;
+            $recaptcha->setScoreThreshold($minScore);
         }
 
-        // v2: success only (no score)
-        return !empty($data['success']);
+        $response = $recaptcha->verify($token, request()->getRealIp() ?: null);
+
+        return $response->isSuccess();
     }
 }
