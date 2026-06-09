@@ -17,6 +17,7 @@ Route::post('/panel/auth/login',    [AuthController::class, 'doLogin']);
 Route::get('/panel/auth/register',  [AuthController::class, 'register']);
 Route::post('/panel/auth/register', [AuthController::class, 'doRegister']);
 Route::get('/panel/auth/logout',    [AuthController::class, 'logout']);
+Route::get('/panel/auth/captcha',   [AuthController::class, 'captcha']);
 Route::get('/panel/auth/forgot',    [AuthController::class, 'forgot']);
 Route::post('/panel/auth/forgot',   [AuthController::class, 'doForgot']);
 Route::get('/panel/auth/reset',     [AuthController::class, 'reset']);

@@ -4,10 +4,11 @@ namespace Yllumi\Sayagi\app\controller;
 
 use support\Request;
 use support\Db;
+use Webman\Captcha\CaptchaBuilder;
 
 class AuthController extends AdminController
 {
-    protected $noNeedLogin = ['login', 'doLogin', 'register', 'doRegister', 'forgot', 'doForgot', 'reset', 'doReset'];
+    protected $noNeedLogin = ['login', 'doLogin', 'register', 'doRegister', 'forgot', 'doForgot', 'reset', 'doReset', 'captcha'];
 
     // ── GET /panel/auth/login ──────────────────────────────
     public function login(Request $request)
@@ -134,30 +135,41 @@ class AuthController extends AdminController
         return json(['success' => 1, 'message' => 'Akun berhasil dibuat. Silakan login.', 'redirect' => site_url(setting('user.login_url'))]);
     }
 
+    // ── GET /panel/auth/captcha ────────────────────────────
+    public function captcha(Request $request)
+    {
+        $builder = new CaptchaBuilder;
+        $builder->build();
+        $request->session()->set('captcha', strtolower($builder->getPhrase()));
+        $img_content = $builder->get();
+        return response($img_content, 200, ['Content-Type' => 'image/jpeg']);
+    }
+
     // ── GET /panel/auth/forgot ─────────────────────────────
     public function forgot(Request $request)
     {
         if (session('user')) return redirect(site_url('panel'));
-        $data['page_title']          = 'Lupa Password';
-        $data['recaptcha_version']  = \Yllumi\Sayagi\libraries\Recaptcha::version();
-        $data['recaptcha_site_key'] = \Yllumi\Sayagi\libraries\Recaptcha::siteKey();
+        $data['page_title'] = 'Lupa Password';
         return render('auth/forgot', $data, null, 'auth');
     }
 
     // ── POST /panel/auth/forgot ────────────────────────────
     public function doForgot(Request $request)
     {
-        $email          = strtolower(trim($request->input('email', '')));
-        $recaptchaToken = $request->input('recaptcha_token', '');
+        $email   = strtolower(trim($request->input('email', '')));
+        $captcha = $request->input('captcha', '');
 
         if (!$email) {
             return json(['success' => 0, 'message' => 'Email wajib diisi.']);
         }
 
-        // Verify reCAPTCHA v3
-        if (!\Yllumi\Sayagi\libraries\Recaptcha::verify($recaptchaToken)) {
-            return json(['success' => 0, 'message' => 'Verifikasi reCAPTCHA gagal. Silakan coba lagi.']);
+        // Verify captcha
+        if (strtolower($captcha) !== $request->session()->get('captcha')) {
+            return json(['success' => 0, 'message' => 'Kode captcha salah. Silakan coba lagi.']);
         }
+
+        // Clear captcha from session to prevent reuse
+        $request->session()->delete('captcha');
 
         $user = Db::table('mein_users')
             ->where('email', $email)

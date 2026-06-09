@@ -5,26 +5,15 @@ function forgotForm() {
         alertMsg: '',
         alertType: '',
         alertShow: false,
+        captchaSrc: '<?= site_url('/panel/auth/captcha') ?>?' + Date.now(),
+        refreshCaptcha() {
+            this.captchaSrc = '<?= site_url('/panel/auth/captcha') ?>?' + Date.now();
+        },
         async submit(event) {
             this.alertShow = false;
             this.loading   = true;
 
-            const version  = document.getElementById('recaptchaVersion').value;
-            const siteKey  = document.getElementById('recaptchaSiteKey').value;
-            let recaptchaToken = '';
-
-            if (version === 'v3' && siteKey) {
-                try {
-                    recaptchaToken = await grecaptcha.execute(siteKey, { action: 'forgot_password' });
-                } catch (e) { /* recaptcha unavailable, proceed */ }
-            } else if (version === 'v2') {
-                // v2 checkbox — token is in the auto-generated textarea
-                const el = document.querySelector('#g-recaptcha-response');
-                if (el) recaptchaToken = el.value;
-            }
-
             const formData = new FormData(event.target);
-            formData.set('recaptcha_token', recaptchaToken);
 
             try {
                 const res  = await fetch(`<?= site_url('/panel/auth/forgot') ?>`, {
@@ -45,26 +34,19 @@ function forgotForm() {
                     this.alertType = 'error';
                     this.alertShow = true;
                     this.loading   = false;
+                    this.refreshCaptcha();
                 }
             } catch (e) {
                 this.alertMsg  = 'Terjadi kesalahan. Silakan coba lagi.';
                 this.alertType = 'error';
                 this.alertShow = true;
                 this.loading   = false;
+                this.refreshCaptcha();
             }
         }
     };
 }
 </script>
-
-<?php if ($recaptcha_version === 'v3' && !empty($recaptcha_site_key)): ?>
-<script src="https://www.google.com/recaptcha/api.js?render=<?= htmlspecialchars($recaptcha_site_key) ?>" async defer></script>
-<?php elseif ($recaptcha_version === 'v2' && !empty($recaptcha_site_key)): ?>
-<script src="https://www.google.com/recaptcha/api.js" async defer></script>
-<?php endif; ?>
-
-<input type="hidden" id="recaptchaVersion" value="<?= htmlspecialchars($recaptcha_version ?? 'off') ?>">
-<input type="hidden" id="recaptchaSiteKey" value="<?= htmlspecialchars($recaptcha_site_key ?? '') ?>">
 
 <div x-data="forgotForm()">
 
@@ -101,11 +83,25 @@ function forgotForm() {
             </div>
         </div>
 
-        <?php if ($recaptcha_version === 'v2' && !empty($recaptcha_site_key)): ?>
-        <div class="form-group" style="display:flex;justify-content:center;margin-bottom:16px;">
-            <div class="g-recaptcha" data-sitekey="<?= htmlspecialchars($recaptcha_site_key) ?>"></div>
+        <div class="form-group">
+            <label class="form-label" for="captcha">Kode Captcha</label>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <div class="input-wrapper" style="flex:1;">
+                    <i class="bi bi-shield-lock input-icon"></i>
+                    <input
+                        type="text"
+                        id="captcha"
+                        name="captcha"
+                        class="form-control"
+                        placeholder="Kode captcha"
+                        maxlength="6"
+                        required>
+                </div>
+                <div style="flex-shrink:0;">
+                    <img :src="captchaSrc" alt="Captcha" style="cursor:pointer;border-radius:6px;height:42px;width:auto;display:block;" @click="refreshCaptcha" title="Klik untuk refresh">
+                </div>
+            </div>
         </div>
-        <?php endif; ?>
 
         <button type="submit" class="btn-login" :disabled="loading">
             <span class="spinner" x-show="loading" style="display:none"></span>

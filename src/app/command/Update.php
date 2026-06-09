@@ -17,6 +17,7 @@ class Update extends Install
         $output->writeln('<info>[sayagi]</info> Starting update...');
 
         $this->publishFiles($output);
+        $this->syncConfig($output);
         $this->syncSettings($output);
 
         if (!$this->runPackageMigrations($output)) {
@@ -25,6 +26,32 @@ class Update extends Install
 
         $output->writeln('<info>[sayagi]</info> Update complete.');
         return Command::SUCCESS;
+    }
+
+    /**
+     * Force-overwrite all config PHP files from package into project config.
+     * Unlike publishFiles() which skips existing files, this always updates.
+     */
+    protected function syncConfig(OutputInterface $output): void
+    {
+        $srcDir  = dirname(__DIR__, 2) . '/config';
+        $destDir = base_path('config/plugin/yllumi/sayagi');
+
+        if (!is_dir($destDir)) {
+            mkdir($destDir, 0755, true);
+            $output->writeln('<info>[sayagi]</info> Created: config/plugin/yllumi/sayagi/');
+        }
+
+        foreach (glob($srcDir . '/*.php') ?: [] as $srcFile) {
+            if (basename($srcFile) === 'migration.php') {
+                continue;
+            }
+            $basename = basename($srcFile);
+            $destFile = $destDir . '/' . $basename;
+
+            copy($srcFile, $destFile);
+            $output->writeln('<info>[sayagi]</info> Synced: config/plugin/yllumi/sayagi/' . $basename);
+        }
     }
 
     /**
