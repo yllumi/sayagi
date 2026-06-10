@@ -12,6 +12,9 @@ use Yllumi\Sayagi\app\controller\RedisController;
 use Yllumi\Sayagi\app\controller\PanelmenuController;
 use Yllumi\Sayagi\app\controller\EntryController;
 
+// Page based route
+\Yllumi\Sayagi\PageRouter::init();
+
 Route::get('/panel/auth/login',     [AuthController::class, 'login']);
 Route::post('/panel/auth/login',    [AuthController::class, 'doLogin']);
 Route::get('/panel/auth/register',  [AuthController::class, 'register']);
