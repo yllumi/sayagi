@@ -16,6 +16,9 @@ class Install extends Command
     {
         $output->writeln('<info>[sayagi]</info> Starting installation...');
 
+        $this->publishFiles($output);
+        $this->renameIndexController($output);
+
         if (!$this->runInstallMigration($output)) {
             return Command::FAILURE;
         }
@@ -23,10 +26,6 @@ class Install extends Command
         if (!$this->runInstallSeeder($output)) {
             return Command::FAILURE;
         }
-
-        $this->publishFiles($output);
-        $this->publishRouteCode($output);
-        $this->renameIndexController($output);
 
         $output->writeln('<info>[sayagi]</info> Installation complete.');
         return Command::SUCCESS;
@@ -152,28 +151,6 @@ class Install extends Command
 
         rename($file, $file . '.bak');
         $output->writeln('<info>[sayagi]</info> Renamed: app/controller/IndexController.php → IndexController.php.bak');
-    }
-
-    protected function publishRouteCode(OutputInterface $output): void
-    {
-        $routeFile = base_path() . '/config/route.php';
-
-        if (!is_file($routeFile)) {
-            $output->writeln('<comment>[sayagi]</comment> config/route.php not found, skipping route injection.');
-            return;
-        }
-
-        $contents = file_get_contents($routeFile);
-        $snippet  = '\\Yllumi\\Sayagi\\PageRouter::init();';
-
-        if (str_contains($contents, $snippet)) {
-            $output->writeln('<comment>[sayagi]</comment> Skipped (exists): PageRouter::init() already in config/route.php');
-            return;
-        }
-
-        $addition = "\n// Page based route\n\\Yllumi\\Sayagi\\PageRouter::init();\n";
-        file_put_contents($routeFile, rtrim($contents) . $addition);
-        $output->writeln('<info>[sayagi]</info> Published: PageRouter::init() added to config/route.php');
     }
 
     protected function copyFile(string $src, string $dest, OutputInterface $output): void
