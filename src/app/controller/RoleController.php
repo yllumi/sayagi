@@ -204,7 +204,7 @@ class RoleController extends AdminController
         $this->syncPrivileges($id, (array) $privs);
 
         // Delete cache
-        \support\Cache::delete('role_privileges:' . $id);
+        \support\Cache::delete('role_privileges.' . $id);
 
         return json(['success' => 1, 'message' => 'Role berhasil diperbarui.', 'redirect' => site_url('/panel/role/index')]);
     }
@@ -230,7 +230,7 @@ class RoleController extends AdminController
             return json(['success' => 0, 'message' => 'Role tidak ditemukan.']);
         }
 
-        \support\Cache::delete('role_privileges:' . $id);
+        \support\Cache::delete('role_privileges.' . $id);
 
         return json(['success' => 1, 'message' => 'Role berhasil dihapus.', 'redirect' => site_url('/panel/role/index')]);
     }
