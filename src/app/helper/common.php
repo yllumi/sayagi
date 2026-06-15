@@ -267,7 +267,7 @@ function isAllow($privilege, $whiteListIDs = [])
 function rolePrivileges($roleId)
 {
     // Check from cache first
-    $cacheKey = "role_privileges:{$roleId}";
+    $cacheKey = "role_privileges.{$roleId}";
     $cached = \support\Cache::get($cacheKey);
     if ($cached !== null) {
         return $cached;

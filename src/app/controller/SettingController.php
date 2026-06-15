@@ -76,7 +76,7 @@ class SettingController extends AdminController
         }
 
         // Bust the cache for this group
-        \support\Cache::delete('panel_setting:' . $group);
+        \support\Cache::delete('panel_setting.' . $group);
 
         return json(['success' => 1, 'message' => 'Pengaturan berhasil disimpan.']);
     }
@@ -89,7 +89,7 @@ class SettingController extends AdminController
      */
     public static function getGroupFromCache(string $group): array
     {
-        $cacheKey = 'panel_setting:' . $group;
+        $cacheKey = 'panel_setting.' . $group;
         $cached   = \support\Cache::get($cacheKey);
         if ($cached !== null) {
             return $cached;
