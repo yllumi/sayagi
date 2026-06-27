@@ -55,6 +55,7 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     
     <script src="<?= site_url('/panel_theme/app.js') ?>"></script>
+    <script src="<?= site_url('/panel_theme/form-builder.js') ?>"></script>
     
     <!-- https://fengyuanchen.github.io/datepicker -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/datepicker/1.0.10/datepicker.min.js" type="text/javascript"></script>

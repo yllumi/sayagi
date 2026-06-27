@@ -35,30 +35,8 @@ class CodeField extends BaseField
         return <<<HTML
                 <div class="form-group">
                     {$this->renderLabel()}
-                    <div id="{$id}" data-ace-field="{$this->name}" style="height:{$height}px;border:1px solid #dee2e6;border-radius:.375rem;font-size:13px"></div>
+                    <div id="{$id}" data-ace-field="{$this->name}" data-ace-mode="{$mode}" style="height:{$height}px;border:1px solid #dee2e6;border-radius:.375rem;font-size:13px"></div>
                     <textarea id="{$id}_ta" name="{$name}" x-model="fields.{$this->name}" class="d-none">{$value}</textarea>
-                    <script>
-                        (function() {
-                            function initAce_{$id}() {
-                                if (typeof ace === 'undefined') { setTimeout(initAce_{$id}, 200); return; }
-                                var editorEl = document.getElementById('{$id}');
-                                var editor = ace.edit('{$id}');
-                                editorEl._ace = editor; // stored for post-fetch sync
-                                editor.setTheme('ace/theme/chrome');
-                                editor.session.setMode('ace/mode/{$mode}');
-                                editor.setShowPrintMargin(false);
-                                editor.setFontSize(13);
-                                var ta = document.getElementById('{$id}_ta');
-                                editor.setValue(ta.value, -1);
-                                // Ace → Alpine: dispatch native 'input' so x-model picks up changes
-                                editor.session.on('change', function() {
-                                    ta.value = editor.getValue();
-                                    ta.dispatchEvent(new Event('input'));
-                                });
-                            }
-                            initAce_{$id}();
-                        })();
-                    </script>
                 </div>
             HTML;
     }

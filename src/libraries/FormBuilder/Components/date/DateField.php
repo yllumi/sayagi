@@ -31,18 +31,11 @@ class DateField extends BaseField
 
     public function render(): string
     {
-        $id            = str_replace(['[', ']'], ['__', ''], $this->name);
-        $visibleValue  = esc($this->value['date'] ?? '');
-        $originalValue = esc($this->value['original'] ?? '');
+        $id = str_replace(['[', ']'], ['__', ''], $this->name);
 
         // Required rule
         if (! empty($this->rules) && str_contains($this->rules, 'required')) {
             $this->attributes['required'] = true;
-        }
-
-        // Caption
-        if (! empty($this->label)) {
-            $this->attributes['data-caption'] = $this->label;
         }
 
         $attrHtml  = $this->renderAttributes();
@@ -56,27 +49,25 @@ class DateField extends BaseField
                     <input
                         type="text"
                         id="{$id}"
-                        value="{$visibleValue}"
+                        data-date-field
+                        data-date-format="{$this->format}"
+                        data-db-format="{$this->dbFormat}"
+                        data-field-name="{$this->name}"
+                        placeholder="{$this->format}"
                         {$attrHtml} />
 
                     <input type="hidden"
-                           id="real_{$id}"
                            name="{$this->name}"
-                           value="{$originalValue}">
+                           x-model="fields.{$this->name}" />
+
+                    <small class="form-text text-muted d-block mt-1"
+                           x-show="fields.{$this->name}"
+                           x-text="moment(fields.{$this->name}, '{$this->dbFormat}').isValid()
+                               ? moment(fields.{$this->name}, '{$this->dbFormat}').format('DD MMMM YYYY')
+                               : ''">
+                    </small>
 
                     {$errorHtml}
-
-                    <script>
-                        $(function() {
-                            $('#{$id}').datepicker({
-                                format: '{$this->format}'
-                            });
-                            $('#{$id}').on('change', function() {
-                                let mydate = moment($(this).val(), "{$this->format}").format("{$this->dbFormat}");
-                                $('#real_{$id}').val(mydate);
-                            });
-                        });
-                    </script>
                 </div>
             HTML;
     }

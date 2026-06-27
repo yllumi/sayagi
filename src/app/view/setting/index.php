@@ -136,6 +136,8 @@ function panelForm(group) {
                             div._ace.setValue(this.fields[div.dataset.aceField] ?? '', -1);
                         }
                     });
+                    // Sync date field displays
+                    if (window.FormBuilder) FormBuilder.syncDateFields(this.$el);
                 }
             } catch (e) {
                 toastr.danger('Gagal memuat data pengaturan.', );
