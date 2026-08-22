@@ -26,41 +26,56 @@ class Install extends Command
         return Command::SUCCESS;
     }
 
-    protected function publishFiles(OutputInterface $output): void
+    /**
+     * Publish file konfigurasi & aset package ke project.
+     * Satu-satunya sumber logika salin-menyalin — dipakai command sayagi:install
+     * (via publishFiles) dan ComposerPlugin saat composer require/update.
+     *
+     * @param string   $projectRoot Absolute path root project (tempat composer.json).
+     * @param callable $log         Callback penulis pesan: fn(string $message): void
+     */
+    public static function publishTo(string $projectRoot, callable $log): void
     {
-        $projectRoot  = base_path();
-        $targetDir    = $projectRoot . '/config/plugin/panel';
-        $packageSrc   = dirname(__DIR__, 2);
-        $packageRoot  = dirname($packageSrc);
+        $packageSrc  = dirname(__DIR__, 2);
+        $packageRoot = dirname($packageSrc);
 
+        $targetDir = $projectRoot . '/config/plugin/panel';
         if (!is_dir($targetDir)) {
             mkdir($targetDir, 0755, true);
-            $output->writeln('<info>[sayagi]</info> Created: config/plugin/panel/');
+            $log('<info>[sayagi]</info> Created: config/plugin/panel/');
         }
 
-        $this->copyFile($packageSrc . '/menu.yml', $targetDir . '/menu.yml', $output);
-        $this->copyFile($packageSrc . '/privileges.yml', $targetDir . '/privileges.yml', $output);
-        $this->copyDirectory($packageSrc . '/settings', $targetDir . '/settings', $output);
+        self::copyFile($packageSrc . '/menu.yml', $targetDir . '/menu.yml', $log);
+        self::copyFile($packageSrc . '/privileges.yml', $targetDir . '/privileges.yml', $log);
+        self::copyDirectory($packageSrc . '/settings', $targetDir . '/settings', $log);
 
         // Publish admin panel theme assets → public/panel_theme/
-        $this->copyDirectory($packageRoot . '/panel_theme', $projectRoot . '/public/panel_theme', $output);
+        self::copyDirectory($packageRoot . '/panel_theme', $projectRoot . '/public/panel_theme', $log);
 
         // Publish frontend SPA page theme → public/page_theme/
-        $this->copyDirectory($packageRoot . '/page_theme', $projectRoot . '/public/page_theme', $output);
+        self::copyDirectory($packageRoot . '/page_theme', $projectRoot . '/public/page_theme', $log);
 
         // Copy all config files to config/plugin/yllumi/sayagi/
         $pluginConfigDir = $projectRoot . '/config/plugin/yllumi/sayagi';
         if (!is_dir($pluginConfigDir)) {
             mkdir($pluginConfigDir, 0755, true);
-            $output->writeln('<info>[sayagi]</info> Created: config/plugin/yllumi/sayagi/');
+            $log('<info>[sayagi]</info> Created: config/plugin/yllumi/sayagi/');
         }
         // Publish webman config files (exclude migration.php — phinx-only, not for webman)
         foreach (glob($packageSrc . '/config/*.php') ?: [] as $configFile) {
             if (basename($configFile) === 'migration.php') {
                 continue;
             }
-            $this->copyFile($configFile, $pluginConfigDir . '/' . basename($configFile), $output);
+            self::copyFile($configFile, $pluginConfigDir . '/' . basename($configFile), $log);
         }
+    }
+
+    /**
+     * Delegate ke publishTo() dengan base_path() project sebagai root.
+     */
+    protected function publishFiles(OutputInterface $output): void
+    {
+        self::publishTo(base_path(), self::outputLog($output));
     }
 
     /**
@@ -119,7 +134,7 @@ class Install extends Command
         }
 
         $output->writeln('<info>[sayagi]</info> Publishing <comment>' . $type . '</comment> template to <comment>app/pages/</comment>...');
-        $this->copyDirectory($srcDir, $destDir, $output);
+        self::copyDirectory($srcDir, $destDir, self::outputLog($output));
     }
 
     protected function renameIndexController(OutputInterface $output): void
@@ -135,22 +150,32 @@ class Install extends Command
         $output->writeln('<info>[sayagi]</info> Renamed: app/controller/IndexController.php → IndexController.php.bak');
     }
 
-    protected function copyFile(string $src, string $dest, OutputInterface $output): void
+    /**
+     * Wrap OutputInterface menjadi callable logger untuk publishTo()/copy*().
+     */
+    protected static function outputLog(OutputInterface $output): callable
+    {
+        return static function (string $message) use ($output): void {
+            $output->writeln($message);
+        };
+    }
+
+    protected static function copyFile(string $src, string $dest, callable $log): void
     {
         if (!is_file($src)) {
             return;
         }
 
         if (is_file($dest)) {
-            $output->writeln('<comment>[sayagi]</comment> Skipped (exists): ' . basename($dest));
+            $log('<comment>[sayagi]</comment> Skipped (exists): ' . basename($dest));
             return;
         }
 
         copy($src, $dest);
-        $output->writeln('<info>[sayagi]</info> Published: ' . $dest);
+        $log('<info>[sayagi]</info> Published: ' . $dest);
     }
 
-    protected function copyDirectory(string $src, string $dest, OutputInterface $output): void
+    protected static function copyDirectory(string $src, string $dest, callable $log): void
     {
         if (!is_dir($src)) {
             return;
@@ -169,8 +194,8 @@ class Install extends Command
             $destPath = $dest . '/' . $item;
 
             is_dir($srcPath)
-                ? $this->copyDirectory($srcPath, $destPath, $output)
-                : $this->copyFile($srcPath, $destPath, $output);
+                ? self::copyDirectory($srcPath, $destPath, $log)
+                : self::copyFile($srcPath, $destPath, $log);
         }
     }
 }

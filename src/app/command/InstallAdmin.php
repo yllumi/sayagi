@@ -6,6 +6,8 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
+use support\Db;
 
 #[AsCommand('sayagi:install-admin', 'Install yllumi/sayagi database: run install migration and seeder.')]
 class InstallAdmin extends Command
@@ -25,6 +27,10 @@ class InstallAdmin extends Command
         }
 
         if (!$this->runInstallSeeder($output)) {
+            return Command::FAILURE;
+        }
+
+        if (!$this->createFirstUser($input, $output)) {
             return Command::FAILURE;
         }
 
@@ -152,6 +158,68 @@ class InstallAdmin extends Command
         }
 
         $output->writeln('<info>[sayagi]</info> install seeder executed.');
+        return true;
+    }
+
+    /**
+     * Tanya data user admin pertama lalu simpan ke mein_users.
+     * Status langsung 'active', role_id = 1 (Super). Idempotent: dilewati
+     * bila sudah ada user dengan role_id = 1.
+     */
+    protected function createFirstUser(InputInterface $input, OutputInterface $output): bool
+    {
+        if (Db::table('mein_users')->where('role_id', 1)->exists()) {
+            $output->writeln('<comment>[sayagi]</comment> Admin user already exists, skipping first user creation.');
+            return true;
+        }
+
+        $io = new SymfonyStyle($input, $output);
+
+        $name     = trim((string) $io->ask('Nama lengkap'));
+        $username = strtolower(trim((string) $io->ask('Username')));
+        $email    = strtolower(trim((string) $io->ask('Email')));
+        $password = (string) $io->askHidden('Password (minimal 8 karakter)');
+
+        if ($name === '' || $username === '' || $email === '' || $password === '') {
+            $output->writeln('<error>[sayagi]</error> Nama, username, email, dan password wajib diisi.');
+            return false;
+        }
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $output->writeln('<error>[sayagi]</error> Format email tidak valid.');
+            return false;
+        }
+
+        if (strlen($password) < 8) {
+            $output->writeln('<error>[sayagi]</error> Password minimal 8 karakter.');
+            return false;
+        }
+
+        if (Db::table('mein_users')->where('email', $email)->exists()) {
+            $output->writeln('<error>[sayagi]</error> Email sudah digunakan.');
+            return false;
+        }
+
+        if (Db::table('mein_users')->where('username', $username)->exists()) {
+            $output->writeln('<error>[sayagi]</error> Username sudah digunakan.');
+            return false;
+        }
+
+        $phpass = new \Yllumi\Sayagi\libraries\Phpass();
+        $now    = date('Y-m-d H:i:s');
+
+        Db::table('mein_users')->insert([
+            'name'       => $name,
+            'username'   => $username,
+            'email'      => $email,
+            'password'   => $phpass->HashPassword($password),
+            'status'     => 'active',
+            'role_id'    => 1,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+
+        $output->writeln('<info>[sayagi]</info> User admin pertama berhasil dibuat: ' . $username . ' (' . $email . ')');
         return true;
     }
 }
