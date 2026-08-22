@@ -1,6 +1,6 @@
 <div class="page" data-name="mobile-home" x-data="$sayagi.page()">
 
-  <?php partialRoot(mobile_pages_path(), '_layouts/partials/tabbar', ['active_tab' => 'home']) ?>
+  <?php partial('_layouts/partials/tabbar', ['active_tab' => 'home']) ?>
 
   <div class="page-content">
     <!-- Hero -->

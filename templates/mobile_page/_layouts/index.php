@@ -2,7 +2,7 @@
 <html>
 
 <head>
-  <?php partialRoot(mobile_pages_path(), '_layouts/partials/head', ['page_title' => $page_title ?? 'SIBI Mobile']) ?>
+  <?php partial('_layouts/partials/head', ['page_title' => $page_title ?? 'SIBI Mobile']) ?>
 </head>
 
 <body>
@@ -26,11 +26,11 @@
 
   <script>
     // Daftar routes F7 di-generate server-side dari atribut #[FrontendRoute]
-    // tiap class PageController di root web mobile (app/pages/).
-    <?= \Yllumi\Sayagi\PortPageRouter::getF7RoutesScript(\Yllumi\Sayagi\PortPageRouter::getPort('mobile', 8779)) ?>
+    // tiap class PageController di root app/pages/.
+    <?= \Yllumi\Sayagi\FERouter::getF7RoutesScript() ?>
   </script>
 
-  <?php partialRoot(mobile_pages_path(), '_layouts/partials/foot') ?>
+  <?php partial('_layouts/partials/foot') ?>
 </body>
 
 </html>

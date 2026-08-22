@@ -31,7 +31,7 @@ class BaseController
         $templateRelPath = strtolower(str_replace('\\', '/', $templateRelPath));
 
         // Render template HTML to string for SSR injection
-        $ssrContent = pageViewRoot(mobile_pages_path(), $templateRelPath, $this->data);
+        $ssrContent = pageView($templateRelPath, $this->data);
 
         return view('/app/pages/_layouts/index', array_merge($this->data, [
             // ssr_route aktual (placeholder :id disubstitusi, mis. /books/2/)

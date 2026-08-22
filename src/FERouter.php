@@ -61,15 +61,16 @@ class FERouter
      * @param string $section Root section F7 (default '/mobile/').
      * @return array
      */
-    public static function getF7Routes(string $section = '/mobile/'): array
+    public static function getF7Routes(?string $section = null): array
     {
-        $section = '/' . trim($section, '/') . '/';
+        // Normalisasi section F7 (mis. '/mobile/'); null = semua route publik
+        // (standalone mobile di app/pages tanpa sub-section).
+        $section = $section !== null ? '/' . trim($section, '/') . '/' : null;
         $map     = PageRouter::scanFrontendRouters();
         $routes  = [];
 
         foreach ($map as $route => $prop) {
-            // Hanya route di dalam section F7 (mis. /mobile/...)
-            if (strpos($route, $section) !== 0) {
+            if ($section !== null && strpos($route, $section) !== 0) {
                 continue;
             }
 
@@ -118,7 +119,7 @@ class FERouter
      * @param string $section Root section F7 (default '/mobile/').
      * @return string
      */
-    public static function getF7RoutesScript(string $section = '/mobile/'): string
+    public static function getF7RoutesScript(?string $section = null): string
     {
         $json = json_encode(
             self::getF7Routes($section),

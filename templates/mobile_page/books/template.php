@@ -5,7 +5,7 @@
     </div>
   </div>
 
-  <?php partialRoot(mobile_pages_path(), '_layouts/partials/tabbar', ['active_tab' => 'books']) ?>
+  <?php partial('_layouts/partials/tabbar', ['active_tab' => 'books']) ?>
 
   <div class="page-content">
     <!-- Loading -->
