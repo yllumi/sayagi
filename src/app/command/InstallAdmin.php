@@ -16,6 +16,10 @@ class InstallAdmin extends Command
     {
         $output->writeln('<info>[sayagi]</info> Starting database installation...');
 
+        if (!$this->checkDatabase($output)) {
+            return Command::FAILURE;
+        }
+
         if (!$this->runInstallMigration($output)) {
             return Command::FAILURE;
         }
@@ -26,6 +30,57 @@ class InstallAdmin extends Command
 
         $output->writeln('<info>[sayagi]</info> Database installation complete.');
         return Command::SUCCESS;
+    }
+
+    /**
+     * Validasi konfigurasi database dari env sebelum migrasi/seeder dijalankan.
+     * Memastikan kredensial terisi (bukan placeholder) dan koneksi berhasil.
+     * Menggunakan env DB_* yang sama dengan config migration (Yllumi\Sayagi\libraries\Migration).
+     */
+    protected function checkDatabase(OutputInterface $output): bool
+    {
+        $host    = getenv('DB_HOST') ?: '127.0.0.1';
+        $port    = getenv('DB_PORT') ?: '3306';
+        $db      = getenv('DB_DATABASE') ?: '';
+        $user    = getenv('DB_USERNAME') ?: '';
+        $pass    = getenv('DB_PASSWORD') ?: '';
+        $adapter = getenv('DB_ADAPTER') ?: 'mysql';
+
+        $output->writeln('<info>[sayagi]</info> Checking database configuration...');
+
+        // Kredensial wajib: database & username harus terisi dan bukan placeholder.
+        $placeholders = ['your_database', 'your_username', 'your_password'];
+        foreach (['database' => $db, 'username' => $user] as $label => $value) {
+            if ($value === '' || in_array($value, $placeholders, true)) {
+                $output->writeln('<error>[sayagi]</error> DB_' . strtoupper($label) . ' belum dikonfigurasi dengan benar di file .env.');
+                return false;
+            }
+        }
+
+        // Password boleh kosong, tapi bukan placeholder default.
+        if (in_array($pass, $placeholders, true)) {
+            $output->writeln('<error>[sayagi]</error> DB_PASSWORD masih placeholder default di file .env.');
+            return false;
+        }
+
+        // Uji koneksi ke database (kredensial sama dengan yang dipakai migrasi).
+        $dsn = $adapter === 'pgsql'
+            ? "pgsql:host={$host};port={$port};dbname={$db}"
+            : "mysql:host={$host};port={$port};dbname={$db};charset=utf8mb4";
+
+        try {
+            new \PDO($dsn, $user, $pass, [
+                \PDO::ATTR_TIMEOUT => 3,
+                \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+            ]);
+            $output->writeln('<info>[sayagi]</info> Database connection OK (' . $adapter . '://' . $host . ':' . $port . '/' . $db . ').');
+        } catch (\PDOException $e) {
+            $output->writeln('<error>[sayagi]</error> Database connection failed: ' . $e->getMessage());
+            $output->writeln('<comment>[sayagi]</comment> Periksa DB_HOST, DB_PORT, DB_DATABASE, DB_USERNAME, DB_PASSWORD di file .env.');
+            return false;
+        }
+
+        return true;
     }
 
     protected function runInstallMigration(OutputInterface $output): bool

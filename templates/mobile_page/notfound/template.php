@@ -1,7 +1,7 @@
 <div class="page" data-name="mobile-notfound" x-data="$sayagi.page()">
   <div class="navbar">
     <div class="navbar-inner">
-      <div class="title">SIBI Mobile</div>
+      <div class="title">Sayagi App</div>
     </div>
   </div>
 

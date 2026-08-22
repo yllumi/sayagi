@@ -2,7 +2,7 @@
 <html>
 
 <head>
-  <?php partial('_layouts/partials/head', ['page_title' => $page_title ?? 'SIBI Mobile']) ?>
+  <?php partial('_layouts/partials/head', ['page_title' => $page_title ?? 'Sayagi App']) ?>
 </head>
 
 <body>

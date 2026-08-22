@@ -18,6 +18,7 @@ class Install extends Command
         $output->writeln('<info>[sayagi]</info> Starting installation...');
 
         $this->publishFiles($output);
+        $this->replaceConfigView($output);
         $this->publishTemplate($input, $output);
         $this->renameIndexController($output);
 
@@ -60,6 +61,32 @@ class Install extends Command
             }
             $this->copyFile($configFile, $pluginConfigDir . '/' . basename($configFile), $output);
         }
+    }
+
+    /**
+     * Ganti config/view.php bawaan webman dengan versi package (handler Raw).
+     * File lama di-rename ke .bak, lalu src/config/view.php disalin ke config/.
+     * Idempotent: bila .bak sudah ada, langkah dilewati (tidak menimpa lagi).
+     */
+    protected function replaceConfigView(OutputInterface $output): void
+    {
+        $projectRoot = base_path();
+        $srcFile     = dirname(__DIR__, 2) . '/config/view.php';
+        $destFile    = $projectRoot . '/config/view.php';
+        $backupFile  = $destFile . '.bak';
+
+        if (is_file($backupFile)) {
+            $output->writeln('<comment>[sayagi]</comment> config/view.php.bak exists, skipping replacement.');
+            return;
+        }
+
+        if (is_file($destFile)) {
+            rename($destFile, $backupFile);
+            $output->writeln('<info>[sayagi]</info> Renamed: config/view.php → config/view.php.bak');
+        }
+
+        copy($srcFile, $destFile);
+        $output->writeln('<info>[sayagi]</info> Published: ' . $destFile);
     }
 
     /**

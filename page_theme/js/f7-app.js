@@ -133,8 +133,8 @@
   (function initApp() {
     const app = new Framework7({
       el: '#app',
-      name: 'SIBI Mobile',
-      theme: 'ios',
+      name: 'Sayagi App',
+      // theme: 'ios',
       darkMode: false,
       view: {
         // Browser history dengan URL bersih (history.pushState):
