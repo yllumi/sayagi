@@ -2,6 +2,7 @@
 
 return [
     Yllumi\Sayagi\app\command\Install::class,
+    Yllumi\Sayagi\app\command\InstallAdmin::class,
     Yllumi\Sayagi\app\command\Update::class,
     Yllumi\Sayagi\app\command\Seed::class,
     Yllumi\Sayagi\app\command\CreateUser::class,
