@@ -18,6 +18,7 @@ class Migrate extends Command
     protected function configure()
     {
         $this->addArgument('plugin', InputArgument::OPTIONAL, 'Plugin path', '');
+        $this->addOption('all', 'a', InputOption::VALUE_NONE, 'Run migrations for all plugins and sayagi core');
     }
 
     /**
@@ -27,6 +28,10 @@ class Migrate extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        if ($input->getOption('all')) {
+            return $this->migrateAll($output);
+        }
+
         $plugin = $input->getArgument('plugin');
 
         // Pilah dulu path plugin
@@ -35,7 +40,44 @@ class Migrate extends Command
         } else {
             $pluginPath = $plugin ? 'plugin/' . trim($plugin, '/') . '/' : '';
         }
-        
+
+        return $this->runMigration($pluginPath, $output);
+    }
+
+    /**
+     * Run migrations for sayagi core and every plugin that ships database/migrations.
+     */
+    protected function migrateAll(OutputInterface $output): int
+    {
+        $output->writeln('<info>[migrate]</info> Running migrations for all plugins and sayagi core...');
+
+        $targets = ['vendor/yllumi/sayagi/src'];
+
+        foreach (glob(base_path('plugin/*')) ?: [] as $pluginDir) {
+            if (!is_dir($pluginDir . '/database/migrations')) {
+                continue;
+            }
+            $targets[] = 'plugin/' . basename($pluginDir) . '/';
+        }
+
+        foreach ($targets as $target) {
+            $output->writeln('');
+            $output->writeln('<info>[migrate]</info> Target: ' . $target);
+            if ($this->runMigration($target, $output) !== self::SUCCESS) {
+                return self::FAILURE;
+            }
+        }
+
+        $output->writeln('');
+        $output->writeln('<info>[migrate]</info> All migrations executed.');
+        return self::SUCCESS;
+    }
+
+    /**
+     * Run phinx migrate for a single plugin path.
+     */
+    protected function runMigration(string $pluginPath, OutputInterface $output): int
+    {
         $command = 'PLUGIN_PATH=' . escapeshellarg($pluginPath)
             . ' ./vendor/bin/phinx migrate --configuration=vendor/yllumi/sayagi/src/config/migration.php';
 
