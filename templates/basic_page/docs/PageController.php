@@ -1,7 +1,7 @@
 <?php namespace app\pages\docs;
 
+use app\pages\BaseController;
 use Yllumi\Sayagi\attributes\FrontendRoute;
-use Yllumi\Sayagi\BaseController;
 
 #[FrontendRoute()]
 class PageController extends BaseController

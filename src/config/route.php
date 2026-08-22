@@ -12,8 +12,9 @@ use Yllumi\Sayagi\app\controller\RedisController;
 use Yllumi\Sayagi\app\controller\PanelmenuController;
 use Yllumi\Sayagi\app\controller\EntryController;
 
-// Page based route
 \Yllumi\Sayagi\PageRouter::init();
+// Page based route (port-aware): app/pages/ di port 8778, app/pages/ di port 8779 (konfigurasi 'pages' di app.php).
+// \Yllumi\Sayagi\PortPageRouter::init();
 
 Route::get('/panel/auth/login',     [AuthController::class, 'login']);
 Route::post('/panel/auth/login',    [AuthController::class, 'doLogin']);

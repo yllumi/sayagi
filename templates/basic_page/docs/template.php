@@ -510,6 +510,217 @@ localStorage.removeItem(<span class="cs">'heroic_token'</span>);     <span class
                 </div>
             </section>
 
+            <!-- ── Framework7: Pendahuluan ── -->
+            <section id="f7-intro" class="dc-section">
+                <h2 class="dc-h2">Framework7 — Section Mobile</h2>
+                <p class="dc-p">Web mobile memakai <strong>Framework7 9.x</strong> sebagai router &amp; UI mobile: page stack, transisi native, navbar &amp; tombol back otomatis. Web mobile berjalan di <strong>root halaman terpisah</strong> <code>app/pages/</code> pada <strong>port 8779</strong> (web utama <code>app/pages/</code> di port 8778), dipilih otomatis oleh <code>\app\library\PortPageRouter</code> berdasarkan port koneksi. URL web mobile TIDAK ber-prefix <code>/mobile</code> — root-nya langsung <code>/</code>, <code>/books/</code>, dst.</p>
+                <div class="dc-callout">
+                    <i class="bi bi-phone dc-callout-icon"></i>
+                    <div>
+                        <strong>Prinsip inti</strong> — <em>satu <code>template.php</code>, dua jalur</em>: SSR (first load / refresh / deep-link) dan CSR (navigasi antar-halaman via F7 async route). Keduanya memakai fragmen <code>.page</code> F7 yang sama.
+                    </div>
+                </div>
+                <h3 class="dc-h3">Kontrak endpoint (dipakai <code>loadF7Page()</code> di <code>f7-app.js</code>)</h3>
+                <div class="dc-code">
+                    <pre>/{route}/template    # HTML fragmen .page F7
+/{route}/data        # JSON (list)
+/{route}/data?id=X   # JSON detail (via query param)</pre>
+                </div>
+                <p class="dc-p">File kunci: <code>app/pages/_layouts/index.php</code> (shell F7), <code>public/page_theme/js/f7-app.js</code> (init router &amp; routes), <code>public/framework7/</code> (aset F7 9.1.2).</p>
+            </section>
+
+            <!-- ── Framework7: Membuat Halaman ── -->
+            <section id="f7-create" class="dc-section">
+                <h2 class="dc-h2">Membuat Halaman F7</h2>
+                <p class="dc-p">Contoh halaman <code>/profil</code> di web mobile (port 8779). Buat folder <code>app/pages/profil/</code> lalu tambahkan <code>PageController.php</code>:</p>
+                <div class="dc-code">
+                    <pre>&lt;?php
+declare(strict_types=1);
+
+namespace app\pages\profil;
+
+use support\Request;
+use Yllumi\Sayagi\attributes\FrontendRoute;
+use Yllumi\Sayagi\BaseController;
+
+#[FrontendRoute(route: '/profil/', template: '/profil/template')]
+class PageController extends BaseController
+{
+    public $data = [];
+
+    public function getIndex(Request $request)
+    {
+        $this-&gt;getData($request);
+        $ssrContent = pageViewRoot(mobile_pages_path(), 'profil/template', $this-&gt;data);
+
+        return view('/app/pages/_layouts/index', array_merge($this-&gt;data, [
+            'ssr_route'   =&gt; '/profil/',
+            'ssr_content' =&gt; $ssrContent,
+            'ssr_data'    =&gt; $this-&gt;data,
+            'page_title'  =&gt; 'Profil',
+        ]));
+    }
+
+    // getTemplate() TIDAK perlu di-override — BaseController menurunkan path
+    // dari namespace secara otomatis (/app/pages/profil/template).
+
+    public function getData(Request $request)
+    {
+        $this-&gt;data = ['name' =&gt; 'Budi', 'member' =&gt; 'Premium'];
+        return json($this-&gt;data);
+    }
+}</pre>
+                </div>
+                <h3 class="dc-h3">Template = fragmen <code>.page</code> F7 lengkap</h3>
+                <p class="dc-p"><code>x-data="$sayagi.page()"</code> ditaruh <strong>di root <code>.page</code></strong> (bukan <code>.page-content</code>) agar scope Alpine mencakup navbar.</p>
+                <div class="dc-code">
+                    <pre>&lt;div class="page" data-name="mobile-profil" x-data="$sayagi.page()"&gt;
+    &lt;div class="navbar"&gt;
+        &lt;div class="navbar-inner"&gt;
+            &lt;div class="left"&gt;
+                &lt;a href="#" class="link back icon-only"&gt;&lt;i class="icon f7-icons"&gt;arrow_left&lt;/i&gt;&lt;/a&gt;
+            &lt;/div&gt;
+            &lt;div class="title"&gt;Profil&lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class="page-content"&gt;
+        &lt;p x-text="data.name"&gt;&lt;/p&gt;
+        &lt;p x-text="data.member"&gt;&lt;/p&gt;
+    &lt;/div&gt;
+&lt;/div&gt;</pre>
+                </div>
+                <h3 class="dc-h3">Daftarkan route di <code>f7-app.js</code></h3>
+                <div class="dc-code">
+                    <pre>// Routes F7 di-generate otomatis server-side dari atribut #[FrontendRoute]
+// (PortPageRouter::getF7RoutesScript di layout mobile) — cukup tambahkan
+// atribut di controller, TIDAK perlu edit f7-app.js. Fallback manual bila
+// window.__F7_ROUTES__ kosong:
+const fallbackRoutes = [
+    { path: '/profil/', serverPath: 'profil' },
+];</pre>
+                </div>
+            </section>
+
+            <!-- ── Framework7: Navigasi & Back ── -->
+            <section id="f7-navigate" class="dc-section">
+                <h2 class="dc-h2">Pindah Halaman &amp; Kembali</h2>
+                <h3 class="dc-h3">Link internal biasa</h3>
+                <p class="dc-p">F7 menangkap klik <code>&lt;a href&gt;</code> internal &amp; merutekannya otomatis:</p>
+                <div class="dc-code">
+                    <pre>&lt;a href="/books/" class="button button-fill"&gt;Lihat Katalog&lt;/a&gt;</pre>
+                </div>
+                <h3 class="dc-h3">Link dengan parameter route</h3>
+                <div class="dc-code">
+                    <pre>&lt;a :href="'/books/' + book.id + '/"' class="item-link item-content"&gt;
+    &lt;div class="item-inner"&gt;&lt;div class="item-title" x-text="book.title"&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;/a&gt;
+
+// f7-app.js (fallback manual):
+{
+    path: '/books/:id/',
+    async({ to, resolve }) { loadF7Page('books/detail', resolve, to.params.id); },
+}</pre>
+                </div>
+                <h3 class="dc-h3">Navigasi programatik</h3>
+                <div class="dc-code">
+                    <pre>$sayagi.f7.navigate('/profil/');     // pindah halaman
+$sayagi.f7.navigate('/books/2/');   // dengan param
+window.f7app.views.main.router.back();     // kembali</pre>
+                </div>
+                <h3 class="dc-h3">Kembali (back)</h3>
+                <ul class="dc-ul">
+                    <li>Tombol back navbar: <code>&lt;a href="#" class="link back icon-only"&gt;</code> — F7 memanggil <code>router.back()</code> dengan transisi.</li>
+                    <li>Tombol back otomatis <strong>disembunyikan</strong> bila halaman adalah initial page (deep-link/refresh — tidak ada halaman sebelumnya).</li>
+                    <li>Browser back/forward juga berfungsi karena <code>browserHistory</code> aktif.</li>
+                </ul>
+                <h3 class="dc-h3">Link keluar section</h3>
+                <p class="dc-p">Link ke luar section mobile (mis. <code>/docs</code>) wajib diberi class <code>external</code> agar full page load:</p>
+                <div class="dc-code">
+                    <pre>&lt;a href="/docs" class="button button-outline external"&gt;Baca Dokumentasi&lt;/a&gt;</pre>
+                </div>
+            </section>
+
+            <!-- ── Framework7: Data, URL & Transisi ── -->
+            <section id="f7-data" class="dc-section">
+                <h2 class="dc-h2">Data, URL &amp; Transisi</h2>
+                <h3 class="dc-h3">Alur data (SSR + CSR)</h3>
+                <p class="dc-p">SSR menyuntik <code>__HEROIC_SSR_DATA__</code> + <code>__HEROIC_SSR_URL__</code>; CSR (via <code>loadF7Page</code>) menyimpan data ke cache <code>$sayagi.setCache('path/data', data)</code> — sehingga <code>$sayagi.page().init()</code> ter-hydrasi <strong>tanpa fetch ganda</strong>.</p>
+                <div class="dc-callout">
+                    <i class="bi bi-database dc-callout-icon"></i>
+                    <div>
+                        <strong>Cache key</strong> — <code>/books/</code> → <code>books/data</code>; <code>/books/2/</code> → <code>books/2/data</code> (data diambil dari <code>/books/data?id=2</code>).
+                    </div>
+                </div>
+                <h3 class="dc-h3">URL &amp; refresh</h3>
+                <p class="dc-p">Konfigurasi <code>view</code> di <code>f7-app.js</code>: <code>browserHistory: true</code>, <code>browserHistorySeparator: ''</code>, <code>browserHistoryRoot: window.location.origin</code> (tanpa trailing slash), <code>browserHistoryInitialMatch: true</code>. Hasilnya URL ikut berubah (<code>/books/</code>), refresh kembali ke halaman terakhir, dan deep-link dirender SSR sebagai initial page.</p>
+                <h3 class="dc-h3">Transisi</h3>
+                <p class="dc-p"><code>animate: true</code> — transisi slide F7 aktif di semua perpindahan halaman. Ada fallback ±650ms di <code>f7-app.js</code> untuk menuntaskan transisi yang macet (tidak aktif di browser normal).</p>
+            </section>
+
+            <!-- ── Framework7: Konvensi & Jebakan ── -->
+            <section id="f7-gotchas" class="dc-section">
+                <h2 class="dc-h2">Konvensi &amp; Jebakan</h2>
+                <div class="dc-table-wrap">
+                    <table class="dc-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Aturan</th>
+                                <th>Alasan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td><code>x-data="$sayagi.page()"</code> di root <code>.page</code></td>
+                                <td>Agar scope Alpine mencakup navbar</td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td><code>getTemplate()</code> pakai <code>view('/app/pages/...')</code></td>
+                                <td>Tanpa prefix akan 500 (path dicari dari base_path)</td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>Data detail via query param <code>?id=</code></td>
+                                <td>PageRouter hanya mendeteksi method di segmen URL terakhir</td>
+                            </tr>
+                            <tr>
+                                <td>4</td>
+                                <td>Async route v9: <code>async({ to, resolve })</code> → <code>resolve({ content })</code></td>
+                                <td>Bukan <code>{ template }</code>; params via <code>to.params.id</code></td>
+                            </tr>
+                            <tr>
+                                <td>5</td>
+                                <td>Trailing slash konsisten (<code>/mobile/books/</code>)</td>
+                                <td>Route path F7 harus match URL link</td>
+                            </tr>
+                            <tr>
+                                <td>6</td>
+                                <td><code>browserHistoryRoot</code> tanpa trailing slash</td>
+                                <td><code>origin + '/'</code> + <code>/x/</code> → dobel slash <code>//x/</code></td>
+                            </tr>
+                            <tr>
+                                <td>7</td>
+                                <td>Link keluar section pakai <code>external</code></td>
+                                <td>Supaya full page load, bukan dirutekan F7</td>
+                            </tr>
+                            <tr>
+                                <td>8</td>
+                                <td><code>iosDynamicNavbar: false</code></td>
+                                <td>Navbar tidak dipindah F7 → binding Alpine aman</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="dc-callout dc-callout-warning">
+                    <i class="bi bi-exclamation-triangle dc-callout-icon"></i>
+                    <div>
+                        <strong>Catatan:</strong> Dokumen tutorial lengkap (contoh detail &amp; lampiran) tersedia di <code>F7.md</code> di root proyek.
+                    </div>
+                </div>
+            </section>
+
             <div class="dc-footer">
                 <a href="/" class="dc-footer-link">
                     <i class="bi bi-arrow-left me-1"></i> Kembali ke Home
@@ -590,6 +801,31 @@ localStorage.removeItem(<span class="cs">'heroic_token'</span>);     <span class
                         {
                             id: 'custom-methods',
                             label: 'Method Kustom'
+                        },
+                    ]
+                },
+                {
+                    id: 'f7',
+                    label: 'Framework7',
+                    items: [{
+                            id: 'f7-intro',
+                            label: 'Pendahuluan'
+                        },
+                        {
+                            id: 'f7-create',
+                            label: 'Membuat Halaman'
+                        },
+                        {
+                            id: 'f7-navigate',
+                            label: 'Navigasi & Back'
+                        },
+                        {
+                            id: 'f7-data',
+                            label: 'Data, URL & Transisi'
+                        },
+                        {
+                            id: 'f7-gotchas',
+                            label: 'Konvensi & Jebakan'
                         },
                     ]
                 },

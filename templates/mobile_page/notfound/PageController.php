@@ -1,10 +1,18 @@
-<?php namespace app\pages\notfound;
+<?php
 
-use Yllumi\Sayagi\BaseController;
-use Yllumi\Sayagi\attributes\FrontendRoute;
+declare(strict_types=1);
 
-#[FrontendRoute(route: 'notfound', preload: true)]
-class PageController extends BaseController {
+namespace app\pages\notfound;
 
+use support\Request;
+use app\pages\BaseController;
 
+/**
+ * Halaman 404 web mobile — root app/pages/, port 8779.
+ *
+ * Tanpa atribut #[FrontendRoute] agar tidak masuk daftar route F7.
+ */
+class PageController extends BaseController
+{
+    public $data = [];
 }

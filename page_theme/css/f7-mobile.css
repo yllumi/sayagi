@@ -1,0 +1,103 @@
+/* ============================================================
+   f7-mobile.css — SIBI Mobile (Framework7 9.x)
+   Override tema & komponen khusus aplikasi mobile.
+   ============================================================ */
+
+:root {
+  --f7-theme-color: #0f766e;
+  --f7-theme-color-rgb: 15, 118, 110;
+  --f7-theme-color-tint: #115e59;
+  --f7-theme-color-shade: #134e4a;
+}
+
+/* Latar halaman */
+.page,
+.page-content {
+  background: #f4f7f6;
+}
+
+/* ---- Hero (landing) ---- */
+.sibi-hero {
+  text-align: center;
+  padding: 36px 16px 8px;
+}
+.sibi-hero-badge img {
+  height: 96px;
+  width: auto;
+}
+.sibi-hero-tagline {
+  color: var(--f7-theme-color);
+  font-size: 18px;
+  font-weight: 600;
+  margin: 14px 0 8px;
+}
+.sibi-chip {
+  display: inline-block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--f7-theme-color);
+  background: #ccfbf1;
+  border: 1px solid #99f6e4;
+  border-radius: 99px;
+  padding: 4px 12px;
+}
+
+/* ---- Stack list (landing) ---- */
+.sibi-stack-list .item-media {
+  color: var(--f7-theme-color);
+}
+
+/* ---- Feature cards (landing) ---- */
+.sibi-feature-card .card-content {
+  min-height: 118px;
+}
+.sibi-feature-icon {
+  font-size: 30px;
+  color: var(--f7-theme-color);
+}
+.sibi-feature-title {
+  font-weight: 600;
+  margin: 8px 0 4px;
+}
+.sibi-feature-desc {
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.45;
+}
+
+/* ---- Sampul buku (list) ---- */
+.sibi-cover {
+  width: 56px;
+  height: 72px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: #e2e8f0;
+}
+
+/* ---- Detail buku ---- */
+.sibi-detail {
+  text-align: center;
+}
+.sibi-detail-cover {
+  width: 140px;
+  height: 190px;
+  border-radius: 12px;
+  object-fit: cover;
+  display: block;
+  margin: 0 auto 16px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  background: #e2e8f0;
+}
+.sibi-detail-meta {
+  color: var(--f7-theme-color);
+  font-weight: 600;
+}
+.sibi-detail-desc {
+  color: #475569;
+  line-height: 1.6;
+  text-align: justify;
+}
+.sibi-error {
+  color: #dc2626;
+  text-align: center;
+}

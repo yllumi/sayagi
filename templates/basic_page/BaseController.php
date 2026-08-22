@@ -1,6 +1,6 @@
 <?php
 
-namespace Yllumi\Sayagi;
+namespace app\pages;
 
 use support\Request;
 use Yllumi\Sayagi\attributes\FrontendRoute;
@@ -13,7 +13,7 @@ class BaseController
     {
         // Populate $this->data from getData() if it exists (SSR data gathering)
         if (method_exists($this, 'getData')) {
-            $this->getData();
+            $this->getData($request);
         }
 
         // Derive template path relative to app/pages/ (e.g. "home/template")
@@ -46,7 +46,7 @@ class BaseController
         return view($templatePath, $this->data);
     }
 
-    private function getPageRoute(): string
+    protected function getPageRoute(): string
     {
         $reflectionClass = new \ReflectionClass($this);
         $attrs = $reflectionClass->getAttributes(FrontendRoute::class);

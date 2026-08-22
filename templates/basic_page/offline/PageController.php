@@ -1,6 +1,6 @@
 <?php namespace app\pages\offline;
 
-use Yllumi\Sayagi\BaseController;
+use app\pages\BaseController;
 use Yllumi\Sayagi\attributes\FrontendRoute;
 
 #[FrontendRoute(route: 'offline', preload: true)]

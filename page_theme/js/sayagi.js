@@ -225,10 +225,21 @@
       // Function to initialize the page
       init() {
         // Auto-detect data URL from current route if not provided.
-        // Use Pinecone Router's context.path when available — it always reflects
-        // the route being rendered, independent of when pushState updates window.location.
+        // Urutan sumber URL (paling akurat dulu):
+        //  1) Elemen halaman itu sendiri (el.f7Page.route.url) — per-element,
+        //     tidak terpengaruh currentRoute global yang bisa STALE saat halaman
+        //     di-init ulang (mis. back-nav ke initial page F7: halaman awal
+        //     dihapus lalu dibuat ulang dari cache DOM).
+        //  2) Framework7 router.currentRoute (URL browser belum tentu ter-update
+        //     saat pageInit).
+        //  3) Pinecone Router context.path.
+        //  4) Fallback terakhir window.location.pathname.
         if (!this.config.url) {
-          const pathname = this.$router?.context?.path ?? window.location.pathname;
+          const pageEl = this.$el && this.$el.closest ? this.$el.closest('.page') : null;
+          const pageUrl = pageEl && pageEl.f7Page && pageEl.f7Page.route ? pageEl.f7Page.route.url : null;
+          const f7Url = pageUrl || window.f7app?.views?.main?.router?.currentRoute?.url;
+          const pineconePath = this.$router?.context?.path;
+          const pathname = f7Url || pineconePath || window.location.pathname;
           const pagePath = pathname === '/' ? 'home' : pathname.replace(/^\/|\/$/g, '');
           this.config.url = pagePath + '/data';
         }
@@ -255,9 +266,9 @@
         }
 
         // Skip network fetch when data was already hydrated from SSR
-        // if (!this.data || Object.keys(this.data).length === 0) {
+        if (!this.data || Object.keys(this.data).length === 0) {
           this.loadPage();
-        // }
+        }
       },
 
       loadPage(fetchUrl = null) {

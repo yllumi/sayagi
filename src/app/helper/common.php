@@ -111,6 +111,38 @@ if (!function_exists('pageView')) {
     }
 }
 
+// Render view dari root pages tertentu (tidak terikat app/pages/).
+// Dipakai root web mobile (app/pages) — analog pageView tapi base path eksplisit.
+if (!function_exists('pageViewRoot')) {
+    function pageViewRoot(string $rootPath, string $view, array $data = []): string
+    {
+        extract($data);
+        ob_start();
+        include $rootPath . DIRECTORY_SEPARATOR . str_replace('.', '/', $view) . '.php';
+        return ob_get_clean();
+    }
+}
+
+// Path folder pages web mobile — baca dari konfigurasi port PortPageRouter.
+if (!function_exists('mobile_pages_path')) {
+    function mobile_pages_path(): string
+    {
+        return \Yllumi\Sayagi\PortPageRouter::getPagesPath(
+            \Yllumi\Sayagi\PortPageRouter::getPort('mobile', 8779)
+        );
+    }
+}
+
+// Include partial view dari root pages tertentu (tidak terikat app/pages/).
+// Dipakai root web mobile (app/pages) — analog partial tapi base path eksplisit.
+if (!function_exists('partialRoot')) {
+    function partialRoot(string $rootPath, string $view, array $data = []): void
+    {
+        extract($data);
+        include $rootPath . DIRECTORY_SEPARATOR . str_replace('.', '/', $view) . '.php';
+    }
+}
+
 // Generate asset URL with versioning based on file modification time
 if (!function_exists('asset_url')) {
 function asset_url(string $filePath): string
