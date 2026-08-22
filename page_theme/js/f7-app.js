@@ -98,13 +98,9 @@
   }
 
   const fallbackRoutes = [
-    // Landing/home section — dipakai utk navigasi in-app (mis. fallback tombol
-    // back saat deep-link ke sub-halaman, atau navigasi programatik).
-    { path: '/mobile/', serverPath: 'mobile' },
-    { path: '/mobile/books/', serverPath: 'mobile/books' },
-    // Detail dilayani folder terpisah (app/pages/mobile/books/detail/),
-    // endpoint publik tetap /mobile/books/:id/. pageUrl disubstitusi dari path.
-    { path: '/mobile/books/:id/', serverPath: 'mobile/books/detail', param: 'id' },
+    // Landing/home web mobile — dipakai utk navigasi in-app (mis.
+    // fallback tombol back saat deep-link ke sub-halaman, atau navigasi programatik).
+    { path: '/', serverPath: 'home' },
   ];
 
   const routes = (window.__F7_ROUTES__ && window.__F7_ROUTES__.length
@@ -133,7 +129,7 @@
   (function initApp() {
     const app = new Framework7({
       el: '#app',
-      name: 'Sayagi App',
+      name: 'Sayagi',
       // theme: 'ios',
       darkMode: false,
       view: {
@@ -174,7 +170,7 @@
       if ((router.history.length || 0) > 1) {
         router.back();
       } else {
-        const target = link.getAttribute('href') || link.getAttribute('data-back-to') || '/mobile/';
+        const target = link.getAttribute('href') || link.getAttribute('data-back-to') || '/';
         // Deep-link: halaman induk TIDAK ada di history, jadi router.back(url)
         // tidak bisa (F7 fallback ke full page load). Pakai navigate in-app dengan:
         //  - transition 'f7-fade' (netral) — BUKAN slide maju, karena ini aksi
@@ -185,6 +181,25 @@
         //    ke halaman deep-link asal.
         router.navigate(target, { transition: 'f7-fade', clearPreviousHistory: true });
       }
+    });
+
+    // ===== Navigasi tabbar tanpa transisi =====
+    // Home & books adalah halaman ROOT untuk fitur berbeda -> pindah tab tidak
+    // perlu animasi slide (mirip tab bar native). Link tabbar memakai class
+    // `prevent-router` agar F7 tidak menavigasi sendiri; handler ini memanggil
+    // router.navigate dengan animate:false (pertukaran halaman instan).
+    document.addEventListener('click', (e) => {
+      const link = e.target && e.target.closest ? e.target.closest('.tabbar-no-transition a') : null;
+      if (!link) return;
+      e.preventDefault();
+      const router = app && app.views && app.views.main && app.views.main.router;
+      if (!router) return;
+      const href = link.getAttribute('href');
+      if (!href || href === '#') return;
+      // Jangan navigasi ulang bila sudah berada di tab yang sama.
+      const current = (router.currentRoute && router.currentRoute.url || '').replace(/\/+$/, '');
+      if (current === href.replace(/\/+$/, '')) return;
+      router.navigate(href, { animate: false });
     });
 
     // Page events halaman awal terpicu saat konstruktor (app belum ter-assign),

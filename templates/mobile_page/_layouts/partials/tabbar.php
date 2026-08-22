@@ -10,7 +10,7 @@
  * konten tidak tertutup tabbar.
  */
 ?>
-<div class="toolbar tabbar tabbar-icons toolbar-bottom sibi-tabbar">
+<div class="toolbar tabbar tabbar-icons toolbar-bottom tabbar-no-transition">
   <div class="toolbar-inner">
     <a href="/" class="link prevent-router<?= ($active_tab ?? '') === 'home' ? ' tab-link-active' : '' ?>">
       <i class="icon f7-icons">house</i>

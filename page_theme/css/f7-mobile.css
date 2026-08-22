@@ -17,21 +17,21 @@
 }
 
 /* ---- Hero (landing) ---- */
-.sibi-hero {
+.sayagi-hero {
   text-align: center;
   padding: 36px 16px 8px;
 }
-.sibi-hero-badge img {
+.sayagi-hero-badge img {
   height: 96px;
   width: auto;
 }
-.sibi-hero-tagline {
+.sayagi-hero-tagline {
   color: var(--f7-theme-color);
   font-size: 18px;
   font-weight: 600;
   margin: 14px 0 8px;
 }
-.sibi-chip {
+.sayagi-chip {
   display: inline-block;
   font-size: 13px;
   font-weight: 600;
@@ -43,30 +43,30 @@
 }
 
 /* ---- Stack list (landing) ---- */
-.sibi-stack-list .item-media {
+.sayagi-stack-list .item-media {
   color: var(--f7-theme-color);
 }
 
 /* ---- Feature cards (landing) ---- */
-.sibi-feature-card .card-content {
+.sayagi-feature-card .card-content {
   min-height: 118px;
 }
-.sibi-feature-icon {
+.sayagi-feature-icon {
   font-size: 30px;
   color: var(--f7-theme-color);
 }
-.sibi-feature-title {
+.sayagi-feature-title {
   font-weight: 600;
   margin: 8px 0 4px;
 }
-.sibi-feature-desc {
+.sayagi-feature-desc {
   font-size: 13px;
   color: #64748b;
   line-height: 1.45;
 }
 
 /* ---- Sampul buku (list) ---- */
-.sibi-cover {
+.sayagi-cover {
   width: 56px;
   height: 72px;
   border-radius: 8px;
@@ -75,10 +75,10 @@
 }
 
 /* ---- Detail buku ---- */
-.sibi-detail {
+.sayagi-detail {
   text-align: center;
 }
-.sibi-detail-cover {
+.sayagi-detail-cover {
   width: 140px;
   height: 190px;
   border-radius: 12px;
@@ -88,16 +88,16 @@
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
   background: #e2e8f0;
 }
-.sibi-detail-meta {
+.sayagi-detail-meta {
   color: var(--f7-theme-color);
   font-weight: 600;
 }
-.sibi-detail-desc {
+.sayagi-detail-desc {
   color: #475569;
   line-height: 1.6;
   text-align: justify;
 }
-.sibi-error {
+.sayagi-error {
   color: #dc2626;
   text-align: center;
 }

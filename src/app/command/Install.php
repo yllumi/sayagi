@@ -113,16 +113,11 @@ class Install extends Command
         $helper   = $this->getHelper('question');
         $question = new ChoiceQuestion(
             '<question>Publish starter page template to app/pages/?</question>',
-            ['basic', 'mobile', 'skip'],
+            ['basic', 'mobile'],
             0
         );
         $question->setErrorMessage('Template type "%s" is not valid.');
         $type = $helper->ask($input, $output, $question);
-
-        if ($type === 'skip') {
-            $output->writeln('<comment>[sayagi]</comment> Skipped publishing starter page template.');
-            return;
-        }
 
         $packageRoot = dirname(__DIR__, 3);
         $srcDir      = $packageRoot . '/templates/' . $type . '_page';

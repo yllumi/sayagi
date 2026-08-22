@@ -16,17 +16,17 @@
 
     <!-- Error -->
     <div class="block" x-show="ui.error">
-      <p class="sibi-error" x-text="ui.errorMessage || 'Terjadi kesalahan saat memuat data.'"></p>
+      <p class="sayagi-error" x-text="ui.errorMessage || 'Terjadi kesalahan saat memuat data.'"></p>
     </div>
 
     <!-- Detail -->
     <template x-if="data.book">
-      <div class="block block-strong sibi-detail" style="margin-top: 16px;">
-        <img :src="data.book.cover" alt="" class="sibi-detail-cover">
+      <div class="block block-strong sayagidetail" style="margin-top: 16px;">
+        <img :src="data.book.cover" alt="" class="sayagi-detail-cover">
         <h2 style="font-size: 20px; margin: 0 0 4px;" x-text="data.book.title"></h2>
-        <p class="sibi-detail-meta" x-text="data.book.author + ' · ' + data.book.year"></p>
-        <span class="sibi-chip" x-text="data.book.category"></span>
-        <p class="sibi-detail-desc" style="margin-top: 14px;" x-text="data.book.description"></p>
+        <p class="sayagi-detail-meta" x-text="data.book.author + ' · ' + data.book.year"></p>
+        <span class="sayagi-chip" x-text="data.book.category"></span>
+        <p class="sayagi-detail-desc" style="margin-top: 14px;" x-text="data.book.description"></p>
       </div>
     </template>
 

@@ -15,7 +15,7 @@
 
     <!-- Error -->
     <div class="block" x-show="ui.error">
-      <p class="sibi-error" x-text="ui.errorMessage || 'Terjadi kesalahan saat memuat data.'"></p>
+      <p class="sayagi-error" x-text="ui.errorMessage || 'Terjadi kesalahan saat memuat data.'"></p>
     </div>
 
     <!-- List -->
@@ -24,14 +24,14 @@
         <template x-for="book in data.books || []" :key="book.id">
           <li>
             <a :href="'/books/' + book.id + '/'" class="item-link item-content">
-              <div class="item-media"><img :src="book.cover" alt="" class="sibi-cover"></div>
+              <div class="item-media"><img :src="book.cover" alt="" class="sayagi-cover"></div>
               <div class="item-inner">
                 <div class="item-title-row">
                   <div class="item-title" x-text="book.title"></div>
                 </div>
                 <div class="item-subtitle" x-text="book.author"></div>
                 <div class="item-text">
-                  <span class="sibi-chip" x-text="book.category"></span>
+                  <span class="sayagi-chip" x-text="book.category"></span>
                   <span style="color:#64748b; margin-left: 6px;" x-text="book.year"></span>
                 </div>
               </div>

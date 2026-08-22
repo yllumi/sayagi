@@ -4,19 +4,19 @@
 
   <div class="page-content">
     <!-- Hero -->
-    <div class="sibi-hero">
-      <div class="sibi-hero-badge">
+    <div class="sayagi-hero">
+      <div class="sayagi-hero-badge">
         <img src="/page_theme/logo-text.png" alt="Sayagi"><br>
       </div>
-      <p class="sibi-hero-tagline">PHP · Alpine.js · Framework7</p>
-      <span class="sibi-chip">
+      <p class="sayagi-hero-tagline">PHP · Alpine.js · Framework7</p>
+      <span class="sayagi-chip">
         v<span x-text="data.version || '1.0.0'"></span> &nbsp;·&nbsp; PHP <span x-text="data.php_version"></span>
       </span>
     </div>
 
     <!-- Stack -->
     <div class="block-title">Built on</div>
-    <div class="list list-outline media-list sibi-stack-list">
+    <div class="list list-outline media-list sayagistack-list">
       <ul>
         <template x-for="item in data.stack || []" :key="item.name">
           <li class="media-item">
@@ -39,11 +39,11 @@
     <div class="row no-gap">
       <template x-for="f in data.features || []" :key="f.title">
         <div class="col-50" style="padding: 4px;">
-          <div class="card sibi-feature-card">
+          <div class="card sayagifeature-card">
             <div class="card-content card-content-padding">
-              <i class="icon f7-icons sibi-feature-icon">star</i>
-              <div class="sibi-feature-title" x-text="f.title"></div>
-              <div class="sibi-feature-desc" x-text="f.desc"></div>
+              <i class="icon f7-icons sayagifeature-icon">star</i>
+              <div class="sayagi-feature-title" x-text="f.title"></div>
+              <div class="sayagi-feature-desc" x-text="f.desc"></div>
             </div>
           </div>
         </div>
