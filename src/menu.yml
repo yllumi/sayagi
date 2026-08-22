@@ -9,16 +9,6 @@
   privilege: dashboard.read
   children: {  }
 -
-  id: menu_69d223a8a20de7
-  label: Mahasiswa
-  module: mahasiswa
-  submodule: null
-  icon: 'bi bi-person'
-  url: /app/mahasiswa
-  target: null
-  privilege: role.read
-  children: {  }
--
   id: menu_69d223a8a20e66
   label: Pengguna
   module: user

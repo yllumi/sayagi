@@ -22,6 +22,7 @@ Panel administrasi siap pakai untuk framework [Webman](https://www.workerman.net
   - [Email Sender](#email-sender)
   - [FormBuilder](#formbuilder)
   - [Attribute RequirePrivilege](#attribute-requireprivilege)
+- [Starter Page Template](#starter-page-template)
 - [Perintah CLI (Console Commands)](#perintah-cli-console-commands)
 - [Struktur Database](#struktur-database)
 - [Lisensi](#lisensi)
@@ -66,16 +67,30 @@ composer require yllumi/sayagi
 
 ### 2. Jalankan Perintah Install
 
-Perintah berikut akan menjalankan migrasi database, seeder awal, dan mempublikasikan file konfigurasi ke project:
+Instalasi dibagi dua tahap — publikasi file (non-database) lalu setup database:
+
+**a. Publish file konfigurasi & starter page template (non-database):**
 
 ```bash
 php webman sayagi:install
 ```
 
 Proses ini akan:
+- Menyalin file konfigurasi ke `config/plugin/panel/` (`menu.yml`, `privileges.yml`, `settings/`)
+- Mempublikasikan aset tema ke `public/panel_theme/` dan `public/page_theme/`
+- Menyalin config plugin ke `config/plugin/yllumi/sayagi/`
+- **Memilih starter page template** (`basic` / `mobile` / `skip`) secara interaktif, lalu menyalinnya ke `app/pages/`
+- Mengubah `app/controller/IndexController.php` menjadi `IndexController.php.bak`
+
+**b. Setup database (migrasi + seeder):**
+
+```bash
+php webman sayagi:install-admin
+```
+
+Proses ini akan:
 - Membuat tabel-tabel yang dibutuhkan (`mein_users`, `mein_roles`, `mein_privileges`, `mein_settings`, dll.)
-- Menyalin file konfigurasi ke `config/plugin/panel/`
-- Menyalin file menu & privilege ke `config/plugin/panel/`
+- Menjalankan seeder awal (`SayagiInitSeeder`)
 
 ### 3. Buat User Admin Pertama
 
@@ -94,8 +109,10 @@ php webman sayagi:user:create "Admin" "admin" "admin@example.com" "password123" 
 Buka browser dan navigasi ke:
 
 ```
-http://localhost:8787/panel
+http://localhost:8778/panel
 ```
+
+> Port mengikuti `listen` di `config/process.php` project (default: 8778).
 
 ---
 
@@ -568,15 +585,69 @@ Jika user tidak memiliki privilege yang dibutuhkan, akan dikembalikan halaman 40
 
 ---
 
+## Starter Page Template
+
+Sayagi menyediakan dua starter page template yang dapat dipilih saat install (atau lewat `sayagi:publish-template`). Template yang dipilih disalin ke **`app/pages/`** sebagai satu-satunya root halaman publik (tanpa pemetaan port terpisah).
+
+| Template | Deskripsi | Isi bawaan |
+|---|---|---|
+| `basic` | Web desktop: router Pinecone + SSR/ISR/SPA, layout klasik | `home/`, `docs/`, `notfound/`, `offline/` |
+| `mobile` | Aplikasi mobile Framework7: page stack, tabbar, transisi native | `home/`, `books/` (katalog contoh), `notfound/` |
+
+**Routing berbasis folder** — setiap folder di `app/pages/` otomatis menjadi route publik:
+
+```
+app/pages/
+├── home/                 # route /
+│   ├── PageController.php
+│   └── template.php
+├── books/                # route /books/
+│   ├── PageController.php
+│   └── template.php
+└── books/detail/         # route /books/:id/ (via #[FrontendRoute])
+    └── PageController.php
+```
+
+**Pola controller:**
+
+```php
+<?php
+
+namespace app\pages\books;
+
+use support\Request;
+use app\pages\BaseController;
+use Yllumi\Sayagi\attributes\FrontendRoute;
+
+#[FrontendRoute(route: '/books/', template: '/books/template')]
+class PageController extends BaseController
+{
+    public $data = [];
+
+    public function getData(Request $request)
+    {
+        $this->data = ['books' => /* ... */];
+        return json($this->data);
+    }
+}
+```
+
+`BaseController` menangani SSR (`getIndex` → render layout + injeksi konten), `getTemplate` (fragmen untuk async route), dan `getData` (JSON). Route dinamis (mis. `/books/{id}`) didaftarkan eksplisit di `config/route.php`.
+
+---
+
 ## Perintah CLI (Console Commands)
 
 | Perintah | Deskripsi |
 |---|---|
-| `php webman sayagi:install` | Instalasi plugin: jalankan migrasi & publish file konfigurasi |
+| `php webman sayagi:install` | Publish file konfigurasi & pilih starter page template ke `app/pages/` (non-database) |
+| `php webman sayagi:install-admin` | Setup database: jalankan migrasi install + seeder awal |
+| `php webman sayagi:publish-template [basic\|mobile]` | Publish ulang starter page template ke `app/pages/` (`--force` untuk menimpa) |
 | `php webman sayagi:user:create` | Buat user baru secara interaktif |
 | `php webman sayagi:update` | Update plugin ke versi terbaru |
 | `php webman make:migration NamaMigrasi` | Buat file migrasi baru menggunakan Phinx |
-| `php webman migrate` | Jalankan semua migrasi yang belum dijalankan |
+| `php webman migrate` | Jalankan migrasi yang belum dijalankan |
+| `php webman migrate -a` | Jalankan migrasi SEMUA plugin + core sayagi sekaligus |
 | `php webman migrate:rollback` | Rollback migrasi terakhir |
 | `php webman db:seed` | Jalankan database seeder |
 
