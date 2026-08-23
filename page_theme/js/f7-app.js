@@ -52,28 +52,47 @@
   }
 
   // ===== Loader halaman F7 (template + data) =====
-  async function loadF7Page(routePath, resolve, id, pageUrl) {
-    // Key template mengikuti path template server (routePath/template).
-    // Template sama untuk semua id, jadi cukup dikunci per route (bukan per halaman).
-    const templateUrl = '/' + routePath + '/template';
-    const templateKey = routePath + '/template';
-    // Cache key data mengikuti URL PUBLIK (currentRoute.url, mis. /mobile/books/2/ ->
-    // "mobile/books/2/data"), BUKAN path folder server (bisa berbeda, mis.
-    // detail di folder books/detail), supaya cocok dengan turunan key di
-    // heroic.js ($sayagi.page -> "path/data").
-    const pagePath = (pageUrl || routePath + (id ? '/' + id : '')).replace(/^\/|\/$/g, '');
-    const cacheKey = pagePath + '/data';
-    // Data detail dikirim via query param (?id=) karena PageRouter hanya
-    // mendeteksi method pada segmen URL terakhir (bukan /{route}/{id}/data).
-    const dataUrl = '/' + routePath + '/data' + (id ? '?id=' + id : '');
+  // cfg    = { path, template } dari window.__F7_ROUTES__:
+  //            - path     : URL publik (bisa ber-param, mis. '/books/:id')
+  //            - template : path template statis (mis. '/books/detail/template')
+  //                         eksplisit dari atribut atau turunan path route.
+  // params = nilai parameter route aktual dari F7 (mis. { id: '2' }).
+  // URL data diturunkan dari template: buang segment '/template' terakhir,
+  // ganti '/data', lalu tambahkan SEMUA parameter (urutan sesuai path).
+  // Contoh path '/course/:course_id/lesson/:lesson_id' dgn template
+  // '/course/lesson/detail/template' -> data '/course/lesson/detail/data/:course_id/:lesson_id'.
+  async function loadF7Page(cfg, params, resolve) {
+    const templateUrl = cfg.template;
+    // Cache key template statis per route (sama untuk semua id).
+    const templateKey = templateUrl.replace(/^\/\/+/, '');
+
+    // Nama parameter diurutkan sesuai urutan kemunculan di path (mis. course_id, lesson_id).
+    const paramNames = (cfg.path.match(/:([^/]+)/g) || []).map((s) => s.slice(1));
+
+    // URL data: template - '/template' -> '/data' + semua parameter.
+    let dataUrl = templateUrl.replace(/\/template$/, '/data');
+    paramNames.forEach((name) => {
+      dataUrl += '/' + (params[name] ?? '');
+    });
+
+    // Cache key data mengikuti URL PUBLIK (path dgn param disubstitusi, mis.
+    // '/books/2/' -> 'books/2/data'), BUKAN folder server — supaya cocok dengan
+    // turunan key di $sayagi.page() (el.f7Page.route.url -> "path/data").
+    let publicPath = cfg.path;
+    paramNames.forEach((name) => {
+      publicPath = publicPath.replace(':' + name, params[name] ?? '');
+    });
+    publicPath = publicPath.replace(/^\/|\/$/g, '');
+    if (publicPath === '') publicPath = 'home';
+    const cacheKey = publicPath + '/data';
 
     try {
       // Template: pakai cache bila sudah pernah dimuat (setara preload Pinecone —
       // template yang sudah pernah difetch tidak difetch lagi).
       let template = window.$sayagi ? $sayagi.getCache(templateKey) : null;
-      // Script template — di-cache per routePath supaya dieksekusi di SETIAP
+      // Script template — di-cache per templateKey supaya dieksekusi di SETIAP
       // navigasi forward (bukan hanya saat template pertama kali di-fetch).
-      let scripts = pageScriptsByPath.get(routePath) || [];
+      let scripts = pageScriptsByPath.get(templateKey) || [];
       // Data: pakai cache bila sudah pernah dimuat (hindari fetch ulang).
       let data = window.$sayagi ? $sayagi.getCache(cacheKey) : null;
 
@@ -85,7 +104,7 @@
         const parsed = extractPageScripts(raw);
         template = parsed.clean;
         scripts = parsed.scripts;
-        pageScriptsByPath.set(routePath, scripts);
+        pageScriptsByPath.set(templateKey, scripts);
         if (window.$sayagi) {
           $sayagi.setCache(templateKey, template);
         }
@@ -121,28 +140,21 @@
   // Daftar routes di-generate SERVER-SIDE dari atribut #[FrontendRoute] tiap
   // class PageController (via \Yllumi\Sayagi\FERouter::getF7RoutesScript())
   // lalu di-inject layout mobile sebagai window.__F7_ROUTES__. Tiap config:
-  //   { path, serverPath, param? }
-  //     - path       : URL publik (mis. '/mobile/books/:id/')
-  //     - serverPath : folder server tempat template & data (mis. 'mobile/books/detail')
-  //     - param      : nama segment dinamis (mis. 'id'), bila route ber-param
+  //   { path, template }
+  //     - path     : URL publik (mis. '/books/:id', bisa ber-param)
+  //     - template : path template statis (mis. '/books/detail/template'),
+  //                  eksplisit dari atribut atau turunan path route.
+  // URL data diturunkan loadF7Page dari template: buang '/template', ganti
+  // '/data', lalu tambahkan semua parameter (urutan sesuai path).
   // Bila window.__F7_ROUTES__ kosong (layout tanpa inject), fallback ke daftar
   // hardcoded di bawah — f7-app.js tetap berfungsi berdiri sendiri.
   function buildF7Route(cfg) {
     return {
       path: cfg.path,
       // F7 v9: fungsi async menerima satu context object ({ to, resolve }),
-      // params route diakses via to.params.
+      // params route aktual diakses via to.params.
       async({ to, resolve }) {
-        let id;
-        let pageUrl;
-        if (cfg.param) {
-          id = to.params[cfg.param];
-          // pageUrl = URL publik dengan nilai param tersubstitusi (mis.
-          // '/mobile/books/2/') — dipakai sebagai cache key data agar
-          // konsisten dengan currentRoute.url di heroic.js.
-          pageUrl = cfg.path.replace(':' + cfg.param, String(id));
-        }
-        loadF7Page(cfg.serverPath, resolve, id, pageUrl);
+        loadF7Page(cfg, to.params || {}, resolve);
       },
     };
   }
@@ -150,7 +162,7 @@
   const fallbackRoutes = [
     // Landing/home web mobile — dipakai utk navigasi in-app (mis.
     // fallback tombol back saat deep-link ke sub-halaman, atau navigasi programatik).
-    { path: '/', serverPath: 'home' },
+    { path: '/', template: '/home/template' },
   ];
 
   const routes = (window.__F7_ROUTES__ && window.__F7_ROUTES__.length
@@ -203,6 +215,19 @@
       routes: routes,
     });
     window.f7app = app;
+
+    // ===== Bersihkan history stale utk halaman awal deep-link =====
+    // Saat refresh/load langsung di URL dalam (mis. /books/detail/2/), F7
+    // menempatkan '/' (home) sbg entry 'sebelumnya' + membuat elemen home
+    // (page-previous) di DOM — sehingga tombol back akan "kembali" ke home
+    // (glitch: home flash lalu reload). Untuk halaman awal BUKAN root,
+    // bersihkan previous history supaya tombol back memakai data-back-to
+    // (fallback) langsung, tanpa melewati home.
+    const initRouter = app.views && app.views.main && app.views.main.router;
+    const initUrl = initRouter && initRouter.currentRoute && initRouter.currentRoute.url;
+    if (initUrl && initUrl !== '/') {
+      initRouter.clearPreviousHistory();
+    }
 
     // ===== Tombol back (class .back-btn) =====
     // Link memakai class `prevent-router` (BUKAN class `back`) agar F7 tidak

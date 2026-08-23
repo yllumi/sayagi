@@ -23,7 +23,7 @@
       <ul>
         <template x-for="book in data.books || []" :key="book.id">
           <li>
-            <a :href="'/books/' + book.id + '/'" class="item-link item-content">
+            <a :href="'/books/detail/' + book.id + '/'" class="item-link item-content">
               <div class="item-media"><img :src="book.cover" alt="" class="sayagi-cover"></div>
               <div class="item-inner">
                 <div class="item-title-row">

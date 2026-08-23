@@ -27,7 +27,7 @@ class PageRouter
             $cacheKey = strtoupper($httpVerb) . '/' . $path;
 
             if (isset($callbackCache[$cacheKey])) {
-                [$callback, $request->controller, $request->action] = $callbackCache[$cacheKey];
+                [$callback, $request->controller, $request->action, $positionalParams] = $callbackCache[$cacheKey];
                 $request->plugin = '';
                 $request->app    = '';
                 return $callback($request);
@@ -64,26 +64,10 @@ class PageRouter
                         return static::notFoundResponse($request, $callbackCache);
                     }
 
-                    // Konversi positional params ke named params agar sesuai dengan
-                    // sistem DI Webman yang melakukan lookup berdasarkan nama parameter
-                    try {
-                        $refParams = (new \ReflectionMethod($controllerNamespace, $methodName))->getParameters();
-                        if (!empty($refParams)) {
-                            $fp = $refParams[0];
-                            $isRequest = ($fp->hasType() && stripos($fp->getType()->getName(), 'Request') !== false)
-                                || strtolower($fp->getName()) === 'request';
-                            if ($isRequest) {
-                                array_shift($refParams);
-                            }
-                        }
-                        $namedParams = [];
-                        foreach ($params as $i => $value) {
-                            if (isset($refParams[$i])) {
-                                $namedParams[$refParams[$i]->getName()] = $value;
-                            }
-                        }
-                        $params = $namedParams;
-                    } catch (\ReflectionException $e) {}
+                    // Simpan param route POSITIONAL — dipakai utk invoke langsung:
+                    // method generik (BaseController::getIndex(Request $request))
+                    // menerima SEMUA param via func_get_args().
+                    $positionalParams = $params;
 
                     // Set request context agar middleware bisa membaca controller & action
                     $request->plugin     = '';
@@ -91,10 +75,28 @@ class PageRouter
                     $request->controller = $controllerNamespace;
                     $request->action     = $methodName;
 
-                    // Bungkus controller call dengan middleware menggunakan App::getCallback()
-                    // Params URL di-bake ke dalam callback dan di-cache per path unik
-                    $callback = \Webman\App::getCallback('', '', [$controllerNamespace, $methodName], $params, true, null);
-                    $callbackCache[$cacheKey] = [$callback, $controllerNamespace, $methodName];
+                    // Panggil method controller LANGSUNG dgn $request + param
+                    // positional. Webman (App::getCallback) hanya meng-inject param
+                    // yang DIDEKLARASIKAN method (DI by name); setelah dibungkus
+                    // middleware global (mis. Webman\Validation\Middleware), argumen
+                    // ekstra pemanggilan dibuang — shg getIndex generik tidak
+                    // menerima route param. Invoke langsung membuat SEMUA param
+                    // tersedia via func_get_args(), sambil tetap menjalankan
+                    // rantai middleware (pola sama dgn webman).
+                    $container   = \Webman\App::container();
+                    $middlewares = \Webman\Middleware::getMiddleware('', '', [$controllerNamespace, $methodName], null, true);
+                    $innermost = function ($request) use ($container, $controllerNamespace, $methodName, $positionalParams) {
+                        // controller_reuse=false -> instance baru tiap request
+                        $controller = $container->make($controllerNamespace);
+                        return $controller->{$methodName}($request, ...$positionalParams);
+                    };
+                    $callback = array_reduce($middlewares, function ($carry, $pipe) use ($container) {
+                        return function ($request) use ($carry, $pipe, $container) {
+                            $instance = is_string($pipe[0]) ? $container->get($pipe[0]) : $pipe[0];
+                            return $instance->process($request, $carry);
+                        };
+                    }, $innermost);
+                    $callbackCache[$cacheKey] = [$callback, $controllerNamespace, $methodName, $positionalParams];
 
                     return $callback($request);
                 }
@@ -164,8 +166,11 @@ class PageRouter
                             $instance->route = '/' . trim(str_replace(DIRECTORY_SEPARATOR, '/', $relativePath), '/');
                         }
 
+                        // Template: null bila tidak eksplisit di atribut — tiap konsumen
+                        // (renderRouter utk Pinecone, FERouter::getF7Routes utk F7)
+                        // menerapkan default-nya sendiri.
                         $router[$instance->route] = [
-                            'template' => $instance->template ? $instance->template : $instance->route . '/template',
+                            'template' => $instance->template ?: null,
                             'preload'  => $instance->preload,
                             'handler'  => $instance->handler,
                         ];

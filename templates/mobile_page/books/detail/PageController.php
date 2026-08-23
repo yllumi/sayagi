@@ -20,7 +20,7 @@ use Yllumi\Sayagi\attributes\FrontendRoute;
  *       /books/detail/template      -> getTemplate (fragmen .page, via BaseController)
  *       /books/detail/data?id=      -> getData (JSON detail)
  */
-#[FrontendRoute(route: '/books/:id/', template: '/books/detail/template')]
+#[FrontendRoute(route: '/books/detail/:id', template: '/books/detail/template')]
 class PageController extends BaseController
 {
     public $data = [];

@@ -4,11 +4,11 @@
 
   <div class="page-content">
     <!-- Hero -->
-    <div class="sayagi-hero">
+    <div class="sayagi-hero" x-data="pageData()">
       <div class="sayagi-hero-badge">
         <img src="/page_theme/logo-text.png" alt="Sayagi"><br>
       </div>
-      <p class="sayagi-hero-tagline">PHP · Alpine.js · Framework7</p>
+      <p class="sayagi-hero-tagline" x-text="tagline"></p>
       <span class="sayagi-chip">
         v<span x-text="data.version || '1.0.0'"></span> &nbsp;·&nbsp; PHP <span x-text="data.php_version"></span>
       </span>
@@ -52,3 +52,12 @@
 
   </div>
 </div>
+
+<script>
+  function pageData() {
+    return {
+      name: "Sayagi",
+      tagline: "PHP · Alpine.js · Framework7"
+    }
+  }
+</script>

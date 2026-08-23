@@ -1,10 +1,10 @@
 <div class="page" data-name="mobile-books-detail" x-data="$sayagi.page()">
-  <div class="navbar">
+  <div class="navbar" x-data="pageData">
     <div class="navbar-inner">
       <div class="left">
         <a href="/books/" class="link back-btn icon-only prevent-router" data-back-to="/books/"><i class="icon f7-icons">arrow_left</i></a>
       </div>
-      <div class="title">Detail Buku</div>
+      <div class="title">Detail Buku - <span x-text="tagline"></span></div>
     </div>
   </div>
 
@@ -39,3 +39,12 @@
     </template>
   </div>
 </div>
+
+<script>
+  function pageData() {
+    return {
+      name: "Sayagi",
+      tagline: "PHP · Alpine.js · Framework7"
+    }
+  }
+</script>

@@ -53,10 +53,13 @@ class FERouter
      *
      * Tiap item route:
      *   [
-     *     'path'       => '/mobile/books/:id/',   // URL publik (dari atribut)
-     *     'serverPath' => 'mobile/books/detail',  // folder server template/data
-     *     'param'      => 'id',                   // segment dinamis, null jika tidak ada
+     *     'path'     => '/mobile/books/:id/',   // URL publik (dari atribut, bisa ber-param)
+     *     'template' => '/mobile/books/detail/template', // path template statis
      *   ]
+     *
+     * Template bisa eksplisit dari atribut #[FrontendRoute(template: ...)] atau
+     * diturunkan dari path route (buang segment parameter). URL data diturunkan
+     * client (f7-app.js) dari template + parameter.
      *
      * @param string $section Root section F7 (default '/mobile/').
      * @return array
@@ -74,30 +77,27 @@ class FERouter
                 continue;
             }
 
-            // serverPath diturunkan dari template:
-            // '/mobile/books/detail/template' -> 'mobile/books/detail'
-            $template   = $prop['template'] ?? ($route . '/template');
-            $serverPath = trim(str_replace('\\', '/', $template), '/');
-            $serverPath = preg_replace('#/template$#', '', $serverPath);
-
-            // Deteksi segment dinamis pada URL publik (mis. ':id')
-            $param = null;
-            if (preg_match('#:([^/]+)#', $route, $m)) {
-                $param = $m[1];
+            // Template: eksplisit dari atribut, atau turunan path route dengan
+            // membuang segment parameter. Contoh path '/course/:course_id/lessons'
+            // tanpa template -> template '/course/lessons/template'.
+            $template = $prop['template'] ?? null;
+            if (empty($template)) {
+                $cleanRoute = rtrim(preg_replace('#(^|/):[^/]+#', '$1', $route), '/');
+                $cleanRoute = $cleanRoute === '' ? '/home' : $cleanRoute;
+                $template = $cleanRoute . '/template';
             }
 
             $routes[] = [
-                'path'       => $route,
-                'serverPath' => $serverPath,
-                'param'      => $param,
+                'path'     => $route,
+                'template' => $template,
             ];
         }
 
         // Urutkan ala F7 (path-to-regexp): route statis dulu (segment pendek ->
         // panjang), baru route ber-param — urutan paling aman untuk matching.
         usort($routes, function ($a, $b) {
-            $paramA = $a['param'] !== null;
-            $paramB = $b['param'] !== null;
+            $paramA = strpos($a['path'], ':') !== false;
+            $paramB = strpos($b['path'], ':') !== false;
             if ($paramA !== $paramB) {
                 return $paramA ? 1 : -1;
             }
