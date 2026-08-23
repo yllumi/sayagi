@@ -14,6 +14,43 @@
 (function () {
   'use strict';
 
+  // ===== Eksekusi <script> di dalam halaman F7 =====
+  // Framework7 TIDAK mengeksekusi <script> pada fragmen halaman yang di-fetch
+  // via async route (script hanya berjalan saat SSR/first load; F7 bahkan
+  // membuang <script> saat parse fragmen). Karena itu:
+  //  - loadF7Page() mengekstrak script dari template sebelum di-inject,
+  //    disimpan per routePath (pageScriptsByPath).
+  //  - pageInit menjalankan script tsb SEBELUM Alpine.initTree supaya fungsi
+  //    global (mis. pageData()) sudah tersedia saat direktif x-data dievaluasi.
+  const pageScriptsByPath = new Map();
+  let pendingPageScripts = [];
+
+  // Ekstrak semua <script> (inline & src) dari HTML template → HTML bersih + daftar script.
+  function extractPageScripts(html) {
+    const scripts = [];
+    const clean = html.replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gi, (match, body) => {
+      const src = match.match(/\bsrc\s*=\s*["']([^"']+)["']/i);
+      scripts.push(src ? { type: 'src', src: src[1] } : { type: 'inline', code: body });
+      return '';
+    });
+    return { clean, scripts };
+  }
+
+  // Jalankan script page — clone ke <head> mempertahankan scope global
+  // (mis. definisi function pageData()).
+  function runPageScripts(scripts) {
+    scripts.forEach((item) => {
+      const el = document.createElement('script');
+      if (item.type === 'src') {
+        el.src = item.src;
+        el.async = true;
+      } else {
+        el.textContent = item.code;
+      }
+      document.head.appendChild(el);
+    });
+  }
+
   // ===== Loader halaman F7 (template + data) =====
   async function loadF7Page(routePath, resolve, id, pageUrl) {
     // Key template mengikuti path template server (routePath/template).
@@ -34,12 +71,21 @@
       // Template: pakai cache bila sudah pernah dimuat (setara preload Pinecone —
       // template yang sudah pernah difetch tidak difetch lagi).
       let template = window.$sayagi ? $sayagi.getCache(templateKey) : null;
+      // Script template — di-cache per routePath supaya dieksekusi di SETIAP
+      // navigasi forward (bukan hanya saat template pertama kali di-fetch).
+      let scripts = pageScriptsByPath.get(routePath) || [];
       // Data: pakai cache bila sudah pernah dimuat (hindari fetch ulang).
       let data = window.$sayagi ? $sayagi.getCache(cacheKey) : null;
 
       if (template == null) {
         const tplRes = await fetch(templateUrl);
-        template = await tplRes.text();
+        const raw = await tplRes.text();
+        // Ekstrak <script> — F7 membuang script saat fragmen di-inject, jadi
+        // dijalankan manual via pendingPageScripts (dikonsumsi di pageInit).
+        const parsed = extractPageScripts(raw);
+        template = parsed.clean;
+        scripts = parsed.scripts;
+        pageScriptsByPath.set(routePath, scripts);
         if (window.$sayagi) {
           $sayagi.setCache(templateKey, template);
         }
@@ -54,6 +100,10 @@
       }
 
       // F7 v9 async route: resolve menerima properti content (bukan template).
+      // PENTING: resolve() memicu pageInit SECARA SINKRON. Slot pendingPageScripts
+      // harus diisi SEBELUM resolve — jika tidak, pageInit navigasi pertama
+      // membaca slot kosong (script halaman baru tereksekusi di navigasi kedua).
+      pendingPageScripts = scripts;
       resolve({ content: template });
     } catch (err) {
       console.error('[F7] Gagal memuat halaman:', err);
@@ -129,8 +179,8 @@
   (function initApp() {
     const app = new Framework7({
       el: '#app',
-      name: 'Sayagi',
-      // theme: 'ios',
+      name: 'Sayagi App',
+    //   theme: 'ios',
       darkMode: false,
       view: {
         // Browser history dengan URL bersih (history.pushState):
@@ -213,7 +263,15 @@
     // ===== Hydrasi Alpine setelah halaman F7 dirender =====
     // Skip elemen yang sudah di-initialize Alpine (anti double-init saat back-nav).
     app.on('pageInit', (page) => {
-      if (!window.Alpine || !page || !page.el) return;
+      if (!page || !page.el) return;
+      // Eksekusi script halaman yang di-fetch F7 (diekstrak di loadF7Page).
+      // Dijalankan SEBELUM Alpine.initTree agar fungsi global (mis. pageData())
+      // sudah tersedia saat direktif x-data dievaluasi.
+      if (pendingPageScripts.length) {
+        runPageScripts(pendingPageScripts);
+        pendingPageScripts = [];
+      }
+      if (!window.Alpine) return;
       const root = page.el.querySelector('[x-data]');
       if (root && !root._x_dataStack) {
         Alpine.initTree(page.el);
