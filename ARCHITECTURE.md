@@ -228,10 +228,89 @@ Helper `copyFile`/`copyDirectory` bersifat **copy-if-not-exists** (file existing
 | Sumber | Tujuan | Isi |
 |---|---|---|
 | `panel_theme/` | `public/panel_theme/` | CSS/JS panel admin: `app.css`, `app.js`, `form-builder.js`, `tinymce`, `myckeditor.js` |
-| `page_theme/` | `public/page_theme/` | Tema frontend: Pinecone `js/main.js`, Framework7 `js/f7-app.js` + `framework7/`, CSS, logo |
+| `page_theme/` | `public/page_theme/` | Tema frontend: Pinecone `js/main.js`, Framework7 `js/f7-app.js` + `framework7/` (termasuk kitchensink), CSS, logo |
 | `templates/` | `app/pages/` | Starter template: `BaseController.php`, `_layouts/`, halaman contoh |
 
 Helper `asset_url()` menambahkan versi dari `filemtime` untuk cache-busting.
+
+### 10.1 Kitchensink Framework7 — Referensi Komponen Mobile
+
+`public/page_theme/framework7/kitchensink/` adalah **demo lengkap komponen Framework7** yang dibundel di `page_theme`. Entry: `index.html`; tiap komponen punya halaman demo `pages/{name}.html` berisi markup + JS yang bisa langsung disalin. **Saat membuat halaman mobile di `app/pages/`, wajib mendahulukan komponen bawaan Framework7 ini** — jangan membangun komponen custom bila sudah tersedia.
+
+#### Navigasi & Struktur Halaman
+
+| Komponen | Demo (`pages/`) | Kegunaan |
+|---|---|---|
+| Navbar | `navbar.html`, `navbar-hide-scroll.html` | Bar navigasi atas (+ sembunyi saat scroll) |
+| Subnavbar | `subnavbar.html`, `subnavbar-title.html` | Bar sekunder di bawah navbar |
+| Toolbar / Tabbar | `toolbar-hide-scroll.html`, `toolbar-tabbar.html`, `tabbar.html`, `tabbar-icons.html`, `tabbar-scrollable.html` | Toolbar bawah, tab bar (ikon/label, scrollable) |
+| Panel | `panel.html` | Panel kiri/kanan (drawer) |
+| Page Transitions | `page-transitions.html`, `page-transitions-effect.html` | Efek transisi antar halaman |
+| Master-Detail | `master-detail-master.html`, `master-detail-detail.html` | Layout master–detail (responsif) |
+| Login Screen | `login-screen.html`, `login-screen-page.html` | Layar login (modal / halaman) |
+| Page Loader | `page-loader-component.html` | Komponen loader per-halaman |
+
+#### Konten & List
+
+| Komponen | Demo (`pages/`) | Kegunaan |
+|---|---|---|
+| Content Block / Grid | `content-block.html`, `grid.html` | Blok konten & sistem kolom |
+| Cards | `cards.html`, `cards-expandable.html` | Kartu konten (+ expandable) |
+| List | `list.html`, `list-button.html`, `list-index.html`, `menu-list.html` | List view, tombol list, index alfabet, menu |
+| Contacts List | `contacts-list.html` | Daftar kontak dengan inisial |
+| Timeline | `timeline.html` | Garis waktu / riwayat |
+| Treeview | `treeview.html` | Struktur pohon |
+| Smart Select | `smart-select.html` | Dropdown ala native via list |
+| Sortable | `sortable.html` | List bisa diurutkan (drag) |
+| Swipeout | `swipeout.html` | Aksi swipe (hapus/edit) |
+| Virtual List | `virtual-list.html`, `virtual-list-vdom.html` | Render list besar secara virtual |
+| Data Table | `data-table.html` | Tabel data responsif |
+| Accordion | `accordion.html` | Konten tarik-turun |
+| Breadcrumbs | `breadcrumbs.html` | Jejak navigasi |
+
+#### Tombol, Input & Form
+
+| Komponen | Demo (`pages/`) | Kegunaan |
+|---|---|---|
+| Buttons / Segmented | `buttons.html`, `segmented.html` | Tombol & segmented control |
+| Chips / Badge | `chips.html`, `badge.html` | Tag & lencana |
+| Stepper / Toggle | `stepper.html`, `toggle.html` | Stepper angka, switch on/off |
+| Checkbox / Radio | `checkbox.html`, `radio.html` | Seleksi |
+| Range | `range.html` | Slider |
+| Inputs / Form Storage | `inputs.html`, `form-storage.html` | Form input & penyimpanan form |
+| FAB | `fab.html`, `fab-morph.html` | Floating action button (+ morph) |
+| Searchbar | `searchbar.html`, `searchbar-expandable.html` | Pencarian |
+| Autocomplete / Picker / Color Picker | `autocomplete.html`, `picker.html`, `color-picker.html` | Pilihan nilai |
+| Text Editor | `text-editor.html` | Editor teks kaya |
+
+#### Overlay & Feedback
+
+| Komponen | Demo (`pages/`) | Kegunaan |
+|---|---|---|
+| Dialog | `dialog.html` | Alert/confirm/prompt |
+| Popup / Popover | `popup.html`, `popover.html` | Layar modal & tooltip konteks |
+| Action Sheet / Sheet Modal | `action-sheet.html`, `sheet-modal.html` | Lembar aksi & modal bawah |
+| Notifications / Toast / Tooltip | `notifications.html`, `toast.html`, `tooltip.html` | Notifikasi & pesan singkat |
+| Preloader / Progressbar / Skeleton | `preloader.html`, `progressbar.html`, `skeleton.html` | Indikator loading |
+| Pull to Refresh / Infinite Scroll | `pull-to-refresh.html`, `infinite-scroll.html` | Muat data geser bawah / tanpa batas |
+
+#### Media & Visualisasi
+
+| Komponen | Demo (`pages/`) | Kegunaan |
+|---|---|---|
+| Icons | `icons.html` | Framework7 Icons (`f7-icons`) |
+| Photo Browser | `photo-browser.html` | Galeri foto layar penuh |
+| Swiper | `swiper.html` + varian (`swiper-horizontal`, `swiper-vertical`, `swiper-fade`, `swiper-loop`, `swiper-lazy`, `swiper-zoom`, `swiper-3d-coverflow`, `swiper-3d-cube`, `swiper-3d-flip`, `swiper-gallery`, `swiper-multiple`, `swiper-nested`, `swiper-parallax`, `swiper-pagination-fraction`, `swiper-pagination-progress`, `swiper-scrollbar`, `swiper-space-between`) | Slider/carousel & varian efek |
+| Charts | `area-chart.html`, `pie-chart.html`, `gauge.html` | Grafik area, pie, gauge |
+| Messages | `messages.html` | Tampilan chat/pesan |
+
+#### Tab & Tema
+
+| Komponen | Demo (`pages/`) | Kegunaan |
+|---|---|---|
+| Tabs | `tabs.html`, `tabs-static.html`, `tabs-animated.html`, `tabs-routable.html`, `tabs-swipeable.html` | Tab konten (statis/animasi/routable/swipe) |
+| Calendar | `calendar.html`, `calendar-page.html` | Kalender (popup/halaman) |
+| Color Themes | `color-themes.html` | Ganti tema warna |
 
 ---
 
