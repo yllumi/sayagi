@@ -245,7 +245,14 @@
       if ((router.history.length || 0) > 1) {
         router.back();
       } else {
-        const target = link.getAttribute('href') || link.getAttribute('data-back-to') || '/';
+        // Sumber target: href (URL asli) atau data-back-to (URL in-app yang
+        // disarankan). Dua-duanya bisa tanpa trailing slash, padahal SEMUA
+        // route F7 berakhiran '/' (mis. route '/savings/' tidak cocok dgn
+        // '/savings'). Normalisasi ke trailing slash supaya router.navigate()
+        // menemukan route dan navigasi in-app benar-benar terjadi (bukan
+        // gagal diam-diam / fallback reload penuh).
+        const rawTarget = link.getAttribute('href') || link.getAttribute('data-back-to') || '/';
+        const target = rawTarget === '/' ? '/' : rawTarget.replace(/\/?$/, '/');
         // Deep-link: halaman induk TIDAK ada di history, jadi router.back(url)
         // tidak bisa (F7 fallback ke full page load). Pakai navigate in-app dengan:
         //  - transition 'f7-fade' (netral) — BUKAN slide maju, karena ini aksi

@@ -192,39 +192,20 @@ if (!function_exists('admin_url')) {
 
 function cell($view, $data = [], $plugin = null)
 {
-    if ($plugin === null) {
-        // Auto-detect base view path from caller's namespace (local or vendor)
-        $basePath = _detect_plugin_from_backtrace() ?? base_path() . '/app/view/';
-    } else {
-        $basePath = _plugin_to_view_path($plugin);
-    }
+    $viewFile = _view_file_path($view, $plugin);
 
     ob_start();
     extract($data);
-    include $basePath . str_replace('.', '/', $view) . '.php';
+    include $viewFile;
     return ob_get_clean();
 }
 
 function render($view, $data = [], $plugin = null, $layout = 'admin')
 {
     $content = cell($view, $data, $plugin);
-    
-    if ($plugin === null) {
-        // Auto-detect once and pass explicitly so nested calls don't re-detect
-        $basePath = _detect_plugin_from_backtrace();
-    } else {
-        $basePath = _plugin_to_view_path($plugin);
-    }
 
-    if ($basePath) {
-        // Prefer plugin-local layout, fallback to panel layout
-        $layoutFile = $basePath . '_layouts/' . $layout . '.php';
-        if (! file_exists($layoutFile)) {
-            $layoutFile = base_path() . '/vendor/yllumi/sayagi/src/app/view/_layouts/' . $layout . '.php';
-        }
-    } else {
-        $layoutFile = base_path() . '/app/view/_layouts/' . $layout . '.php';
-    }
+    // Layouts follow the same override chain and fall back to the panel layout.
+    $layoutFile = _view_file_path('_layouts/' . $layout, $plugin, true);
 
     ob_start();
     extract(array_merge($data, ['content' => $content]));
@@ -232,6 +213,74 @@ function render($view, $data = [], $plugin = null, $layout = 'admin')
     $html = ob_get_clean();
 
     return response($html);
+}
+
+/**
+ * Build the ordered list of base directories used to resolve a view.
+ *
+ * Priority: project override → plugin view (local or vendor). When
+ * $withPanelFallback is true, the panel package views are appended last so a
+ * plugin can reuse the default panel layout without shipping its own.
+ *
+ * @return string[]
+ */
+function _view_base_candidates(?string $plugin = null, bool $withPanelFallback = false): array
+{
+    $info = $plugin === null ? _detect_view_base_info() : null;
+
+    $pluginName = $plugin ?? ($info['plugin'] ?? null);
+    $pluginPath = $plugin !== null ? _plugin_to_view_path($plugin) : ($info['path'] ?? null);
+
+    $bases = [];
+    if ($pluginName !== null && $pluginPath !== null) {
+        $bases[] = _project_view_override_path($pluginName);
+        $bases[] = $pluginPath;
+    } else {
+        // App-level views already live in the project, no override layer needed.
+        $bases[] = base_path() . '/app/view/';
+        $withPanelFallback = false;
+    }
+
+    if ($withPanelFallback) {
+        $bases[] = _project_view_override_path('yllumi/sayagi');
+        $bases[] = _plugin_to_view_path('yllumi/sayagi');
+    }
+
+    return array_values(array_unique(array_filter($bases)));
+}
+
+/**
+ * Resolve a view name to an absolute file path.
+ *
+ * @throws \RuntimeException when none of the candidate files exists.
+ */
+function _view_file_path(string $view, ?string $plugin = null, bool $withPanelFallback = false): string
+{
+    $relative = str_replace('.', '/', $view) . '.php';
+    $bases    = _view_base_candidates($plugin, $withPanelFallback);
+
+    foreach ($bases as $basePath) {
+        $file = rtrim($basePath, '/') . '/' . $relative;
+        if (is_file($file)) {
+            return $file;
+        }
+    }
+
+    $searched = implode(', ', array_map(
+        fn (string $basePath) => rtrim($basePath, '/') . '/' . $relative,
+        $bases
+    ));
+
+    throw new \RuntimeException("View [{$view}] not found. Searched: {$searched}");
+}
+
+/**
+ * Project-level override directory for a plugin's views, e.g.
+ * app/view/overrides/yllumi/sayagi/_partials/sidebar.php
+ */
+function _project_view_override_path(string $plugin): string
+{
+    return base_path() . '/app/view/overrides/' . trim(str_replace('\\', '/', $plugin), '/') . '/';
 }
 
 /**
@@ -296,13 +345,26 @@ function rolePrivileges($roleId)
  */
 function _detect_plugin_from_backtrace(): ?string
 {
-    $frames = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 12);
+    return _detect_view_base_info()['path'] ?? null;
+}
+
+/**
+ * Detect the first plugin-backed class in the call stack.
+ *
+ * @return array{plugin: string, path: string}|null
+ */
+function _detect_view_base_info(): ?array
+{
+    $frames = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 32);
 
     // First pass: local plugins via plugin\{name}\ namespace convention
     foreach ($frames as $frame) {
         $class = $frame['class'] ?? '';
         if (preg_match('/^plugin\\\\([^\\\\]+)\\\\/', $class, $m)) {
-            return base_path() . '/plugin/' . $m[1] . '/app/view/';
+            return [
+                'plugin' => $m[1],
+                'path'   => base_path() . '/plugin/' . $m[1] . '/app/view/',
+            ];
         }
     }
 
@@ -316,8 +378,8 @@ function _detect_plugin_from_backtrace(): ?string
             continue;
         }
 
-        $bestLen      = 0;
-        $bestViewPath = null;
+        $bestLen  = 0;
+        $bestInfo = null;
 
         foreach ($prefixMap as $prefix => $paths) {
             if (
@@ -326,14 +388,18 @@ function _detect_plugin_from_backtrace(): ?string
             ) {
                 $candidate = rtrim($paths[0], '/') . '/app/view/';
                 if (is_dir($candidate)) {
-                    $bestLen      = strlen($prefix);
-                    $bestViewPath = $candidate;
+                    $bestLen  = strlen($prefix);
+                    $bestInfo = [
+                        // "Yllumi\Sayagi\" → "yllumi/sayagi"
+                        'plugin' => rtrim(strtolower(str_replace('\\', '/', $prefix)), '/'),
+                        'path'   => $candidate,
+                    ];
                 }
             }
         }
 
-        if ($bestViewPath !== null) {
-            return $bestViewPath;
+        if ($bestInfo !== null) {
+            return $bestInfo;
         }
     }
 

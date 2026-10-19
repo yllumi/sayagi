@@ -17,6 +17,7 @@ Panel administrasi siap pakai untuk framework [Webman](https://www.workerman.net
 - **Redis Browser** — kelola key Redis langsung dari panel
 - **Email Sender** — PHPMailer + template OTP bawaan
 - **FormBuilder** — pembuat form dinamis (13 tipe field)
+- **Override Template Admin** — ganti partial/layout panel per-file dari project tanpa menyentuh vendor
 - **Starter Page Template** — halaman publik `basic` (Pinecone SSR/SPA) & `mobile` (Framework7)
 
 ---
@@ -64,6 +65,7 @@ config/plugin/panel/menu.yml              # menu sidebar
 config/plugin/panel/privileges.yml        # definisi privilege
 config/plugin/panel/settings/*.yml        # schema group setting
 config/plugin/yllumi/sayagi/app.php       # konfigurasi plugin
+app/view/overrides/                       # override template panel (opsional)
 ```
 
 `config/plugin/yllumi/sayagi/app.php`:
@@ -215,6 +217,78 @@ $sender->sendEmail('user@example.com', 'Subject', '<p>Isi email</p>');
 $html = EmailSender::otpTemplate('Nama User', '123456', 'Nama Aplikasi');
 $sender->sendEmail('user@example.com', 'Kode OTP Anda', $html);
 ```
+
+---
+
+## Override Template Admin
+
+View panel bisa dioverride per-file dari project tanpa mengubah file package.
+Resolver `render()` / `cell()` mencari file dengan urutan prioritas:
+
+1. **Override project** — `app/view/overrides/{plugin}/{path}.php`
+2. **Plugin lokal** — `plugin/{name}/app/view/{path}.php`
+3. **Package vendor** — `vendor/yllumi/sayagi/src/app/view/{path}.php`
+
+Untuk panel admin, `{plugin}` adalah `yllumi/sayagi`.
+
+### Contoh: override sidebar
+
+```bash
+mkdir -p app/view/overrides/yllumi/sayagi/_partials
+cp vendor/yllumi/sayagi/src/app/view/_partials/sidebar.php \
+   app/view/overrides/yllumi/sayagi/_partials/sidebar.php
+```
+
+Edit file hasil salinan tersebut. Selama file override ada, file itu yang dipakai;
+partial lain tetap memakai versi package. Contoh menambah banner di atas menu:
+
+```php
+<div class="sidebar-menu">
+    <div class="text-center px-3 mb-3">
+        <img src="<?= site_url('/panel_theme/banner.png') ?>" alt="Banner" class="img-fluid rounded">
+    </div>
+
+    <ul class="menu">
+        <!-- loop sidebarMenus() bawaan tetap di sini -->
+    </ul>
+</div>
+```
+
+### Partial & layout yang bisa dioverride
+
+| File package | Path override |
+|---|---|
+| `_partials/sidebar.php` | `app/view/overrides/yllumi/sayagi/_partials/sidebar.php` |
+| `_partials/header.php` | `app/view/overrides/yllumi/sayagi/_partials/header.php` |
+| `_partials/footer.php` | `app/view/overrides/yllumi/sayagi/_partials/footer.php` |
+| `_partials/alerts.php` | `app/view/overrides/yllumi/sayagi/_partials/alerts.php` |
+| `_partials/bottommenu.php` | `app/view/overrides/yllumi/sayagi/_partials/bottommenu.php` |
+| `_layouts/admin.php` | `app/view/overrides/yllumi/sayagi/_layouts/admin.php` |
+| `_layouts/auth.php` | `app/view/overrides/yllumi/sayagi/_layouts/auth.php` |
+
+### Override milik plugin
+
+Plugin lokal maupun vendor memakai nama plugin yang sama seperti yang dipakai
+saat memanggil `render()`, misalnya:
+
+```
+app/view/overrides/article/_layouts/admin.php
+app/view/overrides/yllumi/package/_partials/sidebar.php
+```
+
+Bila plugin tidak menyediakan layout sendiri, layout otomatis fallback ke
+`_layouts/admin.php` milik panel `yllumi/sayagi`.
+
+### Menu vs markup
+
+- **Isi menu** (item, urutan, label, icon, privilege) → ubah
+  `config/plugin/panel/menu.yml` atau lewat UI **Development → Panel Menu**.
+- **Markup/desain** (banner, class CSS, struktur sidebar) → override template
+  seperti contoh di atas.
+
+> Jangan mengedit langsung file di `vendor/yllumi/sayagi/src/app/view/`; perubahan
+> akan hilang saat package di-update. Jalankan `php webman restart` setelah
+> mengubah template bila OPcache aktif.
 
 ---
 
