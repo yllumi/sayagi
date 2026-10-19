@@ -2,6 +2,20 @@
     tr.deleted {
         opacity: 0.6;
     }
+
+    th.sortable {
+        cursor: pointer;
+        user-select: none;
+        white-space: nowrap;
+    }
+
+    th.sortable:hover {
+        background-color: rgba(0, 0, 0, .04);
+    }
+
+    th.sortable .bi {
+        font-size: .7rem;
+    }
 </style>
 
 <div class="content" x-data="userTable()" x-init="load()">
@@ -34,6 +48,19 @@
                                 </button>
                             </template>
                         </div>
+                        <!-- Role filter -->
+                        <select
+                            class="form-select"
+                            style="width:180px"
+                            aria-label="Filter role"
+                            x-model="roleFilter"
+                            @change="goPage(1)">
+                            <option value="all">Semua Role</option>
+                            <option value="none">Tanpa Role</option>
+                            <?php foreach ($roles ?? [] as $role) : ?>
+                                <option value="<?= (int) $role->id ?>"><?= esc($role->role_name) ?></option>
+                            <?php endforeach; ?>
+                        </select>
                         <!-- Per-page -->
                         <span class="text-muted  ms-2">Tampilkan</span>
                         <select class="form-select" style="width:80px" x-model.number="perPage" @change="goPage(1)">
@@ -61,14 +88,14 @@
                     <table class="table table-hover align-middle mb-0">
                         <thead class="table-light">
                             <tr>
-                                <th style="width:40px">ID</th>
-                                <th>Nama</th>
-                                <th>Username</th>
-                                <th>Email</th>
-                                <th>No. HP</th>
-                                <th>Role</th>
-                                <th>Status</th>
-                                <th>Terdaftar</th>
+                                <th class="sortable" style="width:56px" @click="sortBy('id')">ID <i class="bi" :class="sortIcon('id')"></i></th>
+                                <th class="sortable" @click="sortBy('name')">Nama <i class="bi" :class="sortIcon('name')"></i></th>
+                                <th class="sortable" @click="sortBy('username')">Username <i class="bi" :class="sortIcon('username')"></i></th>
+                                <th class="sortable" @click="sortBy('email')">Email <i class="bi" :class="sortIcon('email')"></i></th>
+                                <th class="sortable" @click="sortBy('phone')">No. HP <i class="bi" :class="sortIcon('phone')"></i></th>
+                                <th class="sortable" @click="sortBy('role_name')">Role <i class="bi" :class="sortIcon('role_name')"></i></th>
+                                <th class="sortable" @click="sortBy('status')">Status <i class="bi" :class="sortIcon('status')"></i></th>
+                                <th class="sortable" @click="sortBy('created_at')">Terdaftar <i class="bi" :class="sortIcon('created_at')"></i></th>
                                 <th style="width:140px" x-show="privileges.user_write || privileges.user_delete">Aksi</th>
                             </tr>
                         </thead>
@@ -146,7 +173,7 @@
                         Menampilkan
                         <strong x-text="(page - 1) * perPage + 1"></strong>–<strong x-text="Math.min(page * perPage, filtered)"></strong>
                         dari <strong x-text="filtered"></strong> data
-                        <template x-if="search"><span> (difilter dari <strong x-text="total"></strong> total)</span></template>
+                        <template x-if="search || roleFilter !== 'all'"><span> (difilter dari <strong x-text="total"></strong> total)</span></template>
                     </div>
                     <nav>
                         <ul class="pagination pagination-sm mb-0">
@@ -185,6 +212,9 @@ function userTable() {
         perPage:      10,
         search:        '',
         statusFilter:  'active',
+        roleFilter:    'all',
+        sort:          'created_at',
+        dir:           'desc',
         privileges: {},
         statusOptions: [
             { value: 'active',   label: 'Aktif' },
@@ -210,6 +240,9 @@ function userTable() {
                 per_page: this.perPage,
                 search:   this.search,
                 status:   this.statusFilter,
+                role:     this.roleFilter,
+                sort:     this.sort,
+                dir:      this.dir,
             });
             try {
                 const res  = await fetch(`<?= site_url('/panel/user/data') ?>?` + params);
@@ -230,6 +263,21 @@ function userTable() {
             if (p < 1 || (this.pages > 0 && p > this.pages)) return;
             this.page = p;
             this.load();
+        },
+
+        sortBy(field) {
+            if (this.sort === field) {
+                this.dir = this.dir === 'asc' ? 'desc' : 'asc';
+            } else {
+                this.sort = field;
+                this.dir  = 'asc';
+            }
+            this.goPage(1);
+        },
+
+        sortIcon(field) {
+            if (this.sort !== field) return 'bi-arrow-down-up text-muted opacity-50';
+            return this.dir === 'asc' ? 'bi-caret-up-fill' : 'bi-caret-down-fill';
         },
 
         async deleteRow(row) {

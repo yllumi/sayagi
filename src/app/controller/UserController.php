@@ -18,6 +18,7 @@ class UserController extends AdminController
     public function index(Request $request)
     {
         $this->data['page_title'] = 'Manajemen User';
+        $this->data['roles']      = Db::table('mein_roles')->orderBy('role_name')->get();
         return render('user/index', $this->data);
     }
 
@@ -28,7 +29,23 @@ class UserController extends AdminController
         $perPage = max(1, (int) $request->input('per_page', 10));
         $search  = trim($request->input('search', ''));
         $status  = $request->input('status', 'active');
+        $role    = $request->input('role', 'all');
         $offset  = ($page - 1) * $perPage;
+
+        $sortable = [
+            'id'         => 'u.id',
+            'name'       => 'u.name',
+            'username'   => 'u.username',
+            'email'      => 'u.email',
+            'phone'      => 'u.phone',
+            'role_name'  => 'r.role_name',
+            'status'     => 'u.status',
+            'created_at' => 'u.created_at',
+        ];
+
+        $sort      = (string) $request->input('sort', 'created_at');
+        $direction = strtolower((string) $request->input('dir', 'desc')) === 'asc' ? 'asc' : 'desc';
+        $sortField = $sortable[$sort] ?? 'u.created_at';
 
         $query = Db::table('mein_users as u')
             ->leftJoin('mein_roles as r', 'u.role_id', '=', 'r.id')
@@ -36,6 +53,14 @@ class UserController extends AdminController
 
         if ($status && $status !== 'all') {
             $query->where('u.status', $status);
+        }
+
+        if ($role !== '' && $role !== 'all') {
+            if ($role === 'none') {
+                $query->whereNull('u.role_id');
+            } else {
+                $query->where('u.role_id', (int) $role);
+            }
         }
 
         if ($search) {
@@ -49,7 +74,12 @@ class UserController extends AdminController
 
         $total    = Db::table('mein_users')->count();
         $filtered = (clone $query)->count();
-        $rows     = (clone $query)->orderByDesc('u.created_at')->skip($offset)->take($perPage)->get();
+        $rows     = (clone $query)
+            ->orderBy($sortField, $direction)
+            ->orderBy('u.id', 'asc')
+            ->skip($offset)
+            ->take($perPage)
+            ->get();
 
         $data = [];
         foreach ($rows as $u) {

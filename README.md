@@ -9,7 +9,7 @@ Panel administrasi siap pakai untuk framework [Webman](https://www.workerman.net
 ## Fitur
 
 - **Autentikasi** — login, logout, lupa/reset password, registrasi opsional, CAPTCHA
-- **Manajemen User & Role** — CRUD lengkap dengan filter status & pencarian
+- **Manajemen User & Role** — CRUD lengkap dengan filter status/role, pencarian, dan sorting kolom
 - **Privilege berbasis YAML** — definisi `feature.action` + guard deklaratif `#[RequirePrivilege]`
 - **Dynamic Entry CRUD** — CRUD generik dari schema YAML tanpa menulis controller
 - **Menu Panel** — konfigurasi sidebar menu via UI, difilter berdasarkan privilege
