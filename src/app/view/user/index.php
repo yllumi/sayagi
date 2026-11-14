@@ -129,7 +129,19 @@
                             <template x-for="(row, i) in rows" :key="row.id">
                                 <tr :class="row.status">
                                     <td x-text="row.id" class="text-muted "></td>
-                                    <td x-text="row.name"></td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <template x-if="row.avatar_url">
+                                                <img :src="row.avatar_url" alt="" class="user-list-avatar">
+                                            </template>
+                                            <template x-if="!row.avatar_url">
+                                                <span class="user-list-avatar user-list-avatar-empty">
+                                                    <i class="bi bi-person"></i>
+                                                </span>
+                                            </template>
+                                            <span x-text="row.name"></span>
+                                        </div>
+                                    </td>
                                     <td class="text-muted" x-text="row.username ? '@' + row.username : '-'"></td>
                                     <td x-text="row.email"></td>
                                     <td x-text="row.phone"></td>

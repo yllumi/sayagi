@@ -133,6 +133,36 @@ Semua route `/panel/*` dilindungi `PanelAuthMiddleware`; user yang belum login d
 
 Password diverifikasi dengan **Phpass** (portable PHP password hashing). Setelah login, data user disimpan ke session.
 
+### Profil User & Avatar
+
+Setiap user yang login bisa mengubah profilnya sendiri di **`/panel/profile`** (juga lewat dropdown user → *Profil Saya*): nama, username, email, HP, bio singkat, avatar, dan ganti password (wajib verifikasi password lama). Halaman ini tidak memakai `#[RequirePrivilege]` karena hanya menyentuh baris user di session; role dan status tetap dikelola modul **Users** (`user.write`).
+
+| Method | URL | Fungsi |
+|---|---|---|
+| GET | `/panel/profile` | Halaman profil |
+| POST | `/panel/profile/update` | Simpan identitas |
+| POST | `/panel/profile/password` | Ganti password (password lama wajib) |
+| POST | `/panel/profile/avatar` | Unggah avatar sendiri |
+| POST | `/panel/profile/avatar/delete` | Hapus avatar sendiri |
+| POST | `/panel/user/avatar` | Unggah avatar user lain (`user.write`, kirim `id`) |
+| POST | `/panel/user/avatar/delete` | Hapus avatar user lain (`user.write`, kirim `id`) |
+
+Avatar diproses `Yllumi\Sayagi\libraries\AvatarUploader`: validasi MIME (JPG/PNG/WebP/AVIF, maks 3 MB), re-encode GD untuk membuang EXIF, center-crop persegi maks 512 px, lalu disimpan sebagai WebP di `public/uploads/avatars/{Y}/{m}/`. Path relatif disimpan di `mein_users.avatar`.
+
+Untuk form sendiri, gunakan partial siap pakai (preview, drag-drop, hapus, fallback inisial):
+
+```php
+<?= cell('_partials/avatar-uploader', [
+    'config' => [
+        'url'         => site_url('/panel/user/avatar'),
+        'remove_url'  => site_url('/panel/user/avatar/delete'),
+        'extra'       => ['id' => (int) $user->id],
+        'name'        => (string) $user->name,
+        'url_current' => \Yllumi\Sayagi\libraries\AvatarUploader::url($user->avatar ?? null),
+    ],
+], 'yllumi/sayagi') ?>
+```
+
 ### Guard Privilege dengan Attribute
 
 ```php
@@ -263,6 +293,7 @@ partial lain tetap memakai versi package. Contoh menambah banner di atas menu:
 | `_partials/footer.php` | `app/view/overrides/yllumi/sayagi/_partials/footer.php` |
 | `_partials/alerts.php` | `app/view/overrides/yllumi/sayagi/_partials/alerts.php` |
 | `_partials/bottommenu.php` | `app/view/overrides/yllumi/sayagi/_partials/bottommenu.php` |
+| `_partials/avatar-uploader.php` | `app/view/overrides/yllumi/sayagi/_partials/avatar-uploader.php` |
 | `_layouts/admin.php` | `app/view/overrides/yllumi/sayagi/_layouts/admin.php` |
 | `_layouts/auth.php` | `app/view/overrides/yllumi/sayagi/_layouts/auth.php` |
 

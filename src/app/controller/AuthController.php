@@ -53,6 +53,7 @@ class AuthController extends AdminController
             'username' => $user->username,
             'email'    => $user->email,
             'role_id'  => $user->role_id,
+            'avatar'   => $user->avatar ?? null,
         ]);
 
         return json(['success' => 1, 'redirect' => site_url('panel')]);

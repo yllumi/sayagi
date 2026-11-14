@@ -2,12 +2,16 @@
 
 namespace Yllumi\Sayagi\app\controller;
 
+use Yllumi\Sayagi\app\controller\Concerns\HandlesUserAvatar;
 use Yllumi\Sayagi\attributes\RequirePrivilege;
+use Yllumi\Sayagi\libraries\AvatarUploader;
 use support\Request;
 use support\Db;
 
 class UserController extends AdminController
 {
+    use HandlesUserAvatar;
+
     protected $data = [
         'page_title' => '',
         'module' => 'user',
@@ -49,7 +53,7 @@ class UserController extends AdminController
 
         $query = Db::table('mein_users as u')
             ->leftJoin('mein_roles as r', 'u.role_id', '=', 'r.id')
-            ->select('u.id', 'u.name', 'u.username', 'u.email', 'u.phone', 'u.status', 'u.role_id', 'r.role_name', 'u.created_at');
+            ->select('u.id', 'u.name', 'u.username', 'u.email', 'u.phone', 'u.status', 'u.role_id', 'r.role_name', 'u.created_at', 'u.avatar');
 
         if ($status && $status !== 'all') {
             $query->where('u.status', $status);
@@ -91,6 +95,7 @@ class UserController extends AdminController
                 'phone'      => $u->phone ?? '-',
                 'status'     => $u->status,
                 'role_name'  => $u->role_name ?? '-',
+                'avatar_url' => AvatarUploader::url($u->avatar ?? null),
                 'created_at' => $u->created_at,
             ];
         }
@@ -246,5 +251,34 @@ class UserController extends AdminController
         }
 
         return json(['success' => 1, 'message' => 'User berhasil dihapus.', 'redirect' => site_url('/panel/user/index')]);
+    }
+
+    #[RequirePrivilege('user.write')]
+    public function uploadAvatar(Request $request)
+    {
+        $user = $this->targetUser($request);
+        if ($user === null) {
+            return json(['success' => 0, 'message' => 'User tidak ditemukan.']);
+        }
+
+        return json($this->storeUserAvatar($request, $user));
+    }
+
+    #[RequirePrivilege('user.write')]
+    public function removeAvatar(Request $request)
+    {
+        $user = $this->targetUser($request);
+        if ($user === null) {
+            return json(['success' => 0, 'message' => 'User tidak ditemukan.']);
+        }
+
+        return json($this->removeUserAvatar($request, $user));
+    }
+
+    private function targetUser(Request $request): ?object
+    {
+        $id = (int) $request->input('id', 0);
+
+        return $id > 0 ? Db::table('mein_users')->where('id', $id)->first() : null;
     }
 }

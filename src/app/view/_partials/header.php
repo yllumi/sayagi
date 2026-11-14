@@ -21,18 +21,29 @@
                             </div>
                             <div class="user-img d-flex align-items-center">
                                 <div class="avatar avatar-md">
-                                    <img src="https://ui-avatars.com/api/?name=<?= urlencode(session('user.name') ?? '') ?>&background=435ebe&color=fff" alt="User Avatar">
+                                    <?php $sessionAvatar = \Yllumi\Sayagi\libraries\AvatarUploader::url(session('user.avatar')); ?>
+                                    <?php if ($sessionAvatar !== null): ?>
+                                        <img src="<?= htmlspecialchars($sessionAvatar, ENT_QUOTES, 'UTF-8') ?>" alt="Avatar <?= htmlspecialchars((string) session('user.name'), ENT_QUOTES, 'UTF-8') ?>">
+                                    <?php else: ?>
+                                        <img src="https://ui-avatars.com/api/?name=<?= urlencode(session('user.name') ?? '') ?>&background=435ebe&color=fff" alt="User Avatar">
+                                    <?php endif; ?>
                                 </div>
                             </div>
                         </div>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="dropdownMenuButton" style="min-width: 11rem;">
-                        <li><a class="dropdown-item" href="#"><i class="icon-mid bi bi-person me-2"></i> My
-                                Profile</a></li>
-                        <li><a class="dropdown-item" href="#"><i class="icon-mid bi bi-gear me-2"></i>
-                                Settings</a></li>
-                        <li><a class="dropdown-item" href="#"><i class="icon-mid bi bi-wallet me-2"></i>
-                                Wallet</a></li>
+                        <li>
+                            <a class="dropdown-item" href="<?= site_url('/panel/profile') ?>">
+                                <i class="icon-mid bi bi-person me-2"></i> Profil Saya
+                            </a>
+                        </li>
+                        <?php if (isAllow('setting.update')): ?>
+                            <li>
+                                <a class="dropdown-item" href="<?= site_url('/panel/setting') ?>">
+                                    <i class="icon-mid bi bi-gear me-2"></i> Pengaturan
+                                </a>
+                            </li>
+                        <?php endif; ?>
                         <li>
                             <hr class="dropdown-divider mt-1">
                         </li>
@@ -80,3 +91,11 @@
         </div>
     </nav>
 </header>
+<script>
+    document.addEventListener('avatar-updated', function (event) {
+        var url = event.detail && event.detail.avatar_url;
+        var image = document.querySelector('.user-img img');
+        if (!url || !image) return;
+        image.src = url;
+    });
+</script>

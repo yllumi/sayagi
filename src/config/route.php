@@ -10,6 +10,7 @@ use Yllumi\Sayagi\app\controller\PrivilegeController;
 use Yllumi\Sayagi\app\controller\SettingController;
 use Yllumi\Sayagi\app\controller\RedisController;
 use Yllumi\Sayagi\app\controller\PanelmenuController;
+use Yllumi\Sayagi\app\controller\ProfileController;
 use Yllumi\Sayagi\app\controller\EntryController;
 
 \Yllumi\Sayagi\PageRouter::init();
@@ -38,6 +39,15 @@ Route::post('/panel/user/store', [UserController::class, 'store']);
 Route::get('/panel/user/edit',   [UserController::class, 'edit']);
 Route::post('/panel/user/update',[UserController::class, 'update']);
 Route::post('/panel/user/delete',[UserController::class, 'delete']);
+Route::post('/panel/user/avatar',[UserController::class, 'uploadAvatar']);
+Route::post('/panel/user/avatar/delete',[UserController::class, 'removeAvatar']);
+
+// Profil user yang sedang login (self-service)
+Route::get('/panel/profile',              [ProfileController::class, 'index']);
+Route::post('/panel/profile/update',      [ProfileController::class, 'update']);
+Route::post('/panel/profile/password',    [ProfileController::class, 'password']);
+Route::post('/panel/profile/avatar',      [ProfileController::class, 'uploadAvatar']);
+Route::post('/panel/profile/avatar/delete',[ProfileController::class, 'removeAvatar']);
 
 // Role CRUD
 Route::get('/panel/role',  [RoleController::class, 'index']);

@@ -21,6 +21,29 @@ $btnText = $isEdit ? 'Simpan Perubahan' : 'Tambah User';
                         <!-- Alert -->
                         <div class="alert d-none" id="formAlert" role="alert"></div>
 
+                        <?php if ($isEdit): ?>
+                            <?php $avatarUrl = \Yllumi\Sayagi\libraries\AvatarUploader::url($user->avatar ?? null); ?>
+                            <div class="mb-4">
+                                <?= cell('_partials/avatar-uploader', [
+                                    'config' => [
+                                        'url'         => site_url('/panel/user/avatar'),
+                                        'remove_url'  => site_url('/panel/user/avatar/delete'),
+                                        'field'       => 'avatar',
+                                        'extra'       => ['id' => (int) $user->id],
+                                        'name'        => (string) $user->name,
+                                        'url_current' => $avatarUrl,
+                                    ],
+                                    'name' => (string) $user->name,
+                                    'url'  => $avatarUrl,
+                                ], 'yllumi/sayagi') ?>
+                            </div>
+                        <?php else: ?>
+                            <div class="alert alert-light border small">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Avatar dapat diunggah setelah user disimpan.
+                            </div>
+                        <?php endif; ?>
+
                         <form id="userForm" @submit.prevent="submit('<?= $action ?>')">
 
                             <?php if ($isEdit): ?>
