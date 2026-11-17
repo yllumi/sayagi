@@ -51,13 +51,18 @@ $json = htmlspecialchars(
             <button type="button" class="btn btn-sm btn-primary" @click="pick()" :disabled="uploading">
                 <i class="bi bi-upload"></i> Pilih gambar
             </button>
+            <button type="button" class="btn btn-sm btn-outline-secondary" data-avatar-adjust
+                    x-show="preview" x-cloak
+                    @click="adjust()" :disabled="uploading || removing" title="Sesuaikan area avatar">
+                <i class="bi bi-crop"></i> Sesuaikan
+            </button>
             <button type="button" class="btn btn-sm btn-outline-danger" x-show="preview" x-cloak
                     @click="remove()" :disabled="removing">
                 <i class="bi bi-trash"></i> Hapus
             </button>
         </div>
         <p class="form-text mb-0">
-            JPG, PNG, WebP, atau AVIF &middot; maksimal 3 MB &middot; otomatis dipotong persegi.
+            JPG, PNG, WebP, atau AVIF &middot; maksimal 3 MB &middot; atur area crop sebelum disimpan.
         </p>
     </div>
 
