@@ -63,7 +63,7 @@ class AuthController extends AdminController
     public function logout(Request $request)
     {
         $request->session()->delete('user');
-        return redirect(site_url('panel/auth/login'));
+        return redirect('panel/auth/login');
     }
 
     // ── GET /panel/auth/register ──────────────────────────
