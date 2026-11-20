@@ -322,7 +322,7 @@ function rolePrivileges($roleId)
         return $cached;
     }
 
-    $privileges = support\Db::table('mein_role_privileges')
+    $privileges = support\Db::table('mein_role_privileges_webman')
         ->select('feature', 'privilege')
         ->where('role_id', $roleId)
         ->get()

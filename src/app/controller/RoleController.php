@@ -43,7 +43,7 @@ class RoleController extends AdminController
 
     private function dbPriv()
     {
-        return Db::table('mein_role_privileges');
+        return Db::table('mein_role_privileges_webman');
     }
 
     // ── GET /panel/role/index ──────────────────────────────
