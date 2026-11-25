@@ -191,6 +191,12 @@ Tabel dibuat oleh migrasi `src/database/migrations/*_install_plugin.php` (Phinx,
 
 > Tidak ada tabel `mein_privileges` / `mein_settings` — privilege disimpan di `mein_role_privileges`, settings di `mein_options`.
 
+**Nama tabel dapat diubah** lewat `config/plugin/yllumi/sayagi/app.php` → `tables` (`users`,
+`user_profile`, `roles`, `role_privileges`; basis file: `src/config/app.php`). Semua controller,
+command, helper (`rolePrivileges`), migrasi, dan seeder mengakses tabel via helper global
+`panelTable($key)`; default `mein_*` dipakai bila key config tidak ada. Tabel `mein_options`
+belum termasuk (nama tetap).
+
 ---
 
 ## 9. Command Console & Sistem Migrasi

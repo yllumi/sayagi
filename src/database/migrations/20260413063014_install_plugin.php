@@ -20,6 +20,11 @@ final class InstallPlugin extends AbstractMigration
      */
     public function up(): void
     {
+        $rolePrivilegesTable = panelTable('role_privileges');
+        $rolesTable          = panelTable('roles');
+        $userProfileTable    = panelTable('user_profile');
+        $usersTable          = panelTable('users');
+
         if (!$this->hasTable('mein_options')) {
             $this->table('mein_options', [
                 'id' => false,
@@ -34,8 +39,8 @@ final class InstallPlugin extends AbstractMigration
                 ->create();
         }
 
-        if (!$this->hasTable('mein_role_privileges')) {
-            $this->table('mein_role_privileges', [
+        if (!$this->hasTable($rolePrivilegesTable)) {
+            $this->table($rolePrivilegesTable, [
                 'id' => false,
                 'primary_key' => ['id'],
                 'engine' => 'InnoDB',
@@ -49,8 +54,8 @@ final class InstallPlugin extends AbstractMigration
                 ->create();
         }
 
-        if (!$this->hasTable('mein_roles')) {
-            $this->table('mein_roles', [
+        if (!$this->hasTable($rolesTable)) {
+            $this->table($rolesTable, [
                 'id' => false,
                 'primary_key' => ['id'],
                 'engine' => 'InnoDB',
@@ -65,8 +70,8 @@ final class InstallPlugin extends AbstractMigration
                 ->create();
         }
 
-        if (!$this->hasTable('mein_user_profile')) {
-            $this->table('mein_user_profile', [
+        if (!$this->hasTable($userProfileTable)) {
+            $this->table($userProfileTable, [
                 'id' => false,
                 'primary_key' => ['id'],
                 'engine' => 'InnoDB',
@@ -103,8 +108,8 @@ final class InstallPlugin extends AbstractMigration
                 ->create();
         }
 
-        if (!$this->hasTable('mein_users')) {
-            $this->table('mein_users', [
+        if (!$this->hasTable($usersTable)) {
+            $this->table($usersTable, [
                 'id' => false,
                 'primary_key' => ['id'],
                 'engine' => 'InnoDB',
@@ -144,9 +149,9 @@ final class InstallPlugin extends AbstractMigration
     public function down(): void
     {
         $this->table('mein_options')->drop()->save();
-        $this->table('mein_role_privileges')->drop()->save();
-        $this->table('mein_roles')->drop()->save();
-        $this->table('mein_user_profile')->drop()->save();
-        $this->table('mein_users')->drop()->save();
+        $this->table(panelTable('role_privileges'))->drop()->save();
+        $this->table(panelTable('roles'))->drop()->save();
+        $this->table(panelTable('user_profile'))->drop()->save();
+        $this->table(panelTable('users'))->drop()->save();
     }
 }

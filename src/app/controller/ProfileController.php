@@ -65,15 +65,15 @@ class ProfileController extends AdminController
             return json(['success' => 0, 'message' => 'Format email tidak valid.']);
         }
 
-        if (Db::table('mein_users')->where('email', $email)->where('id', '!=', $user->id)->exists()) {
+        if (Db::table(panelTable('users'))->where('email', $email)->where('id', '!=', $user->id)->exists()) {
             return json(['success' => 0, 'message' => 'Email sudah digunakan user lain.']);
         }
 
-        if (Db::table('mein_users')->where('username', $username)->where('id', '!=', $user->id)->exists()) {
+        if (Db::table(panelTable('users'))->where('username', $username)->where('id', '!=', $user->id)->exists()) {
             return json(['success' => 0, 'message' => 'Username sudah digunakan user lain.']);
         }
 
-        Db::table('mein_users')->where('id', $user->id)->update([
+        Db::table(panelTable('users'))->where('id', $user->id)->update([
             'name'              => $name,
             'username'          => $username,
             'email'             => $email,
@@ -123,7 +123,7 @@ class ProfileController extends AdminController
             return json(['success' => 0, 'message' => 'Password baru harus berbeda dari password lama.']);
         }
 
-        Db::table('mein_users')->where('id', $user->id)->update([
+        Db::table(panelTable('users'))->where('id', $user->id)->update([
             'password'   => $phpass->HashPassword($password),
             'updated_at' => date('Y-m-d H:i:s'),
         ]);
@@ -158,8 +158,8 @@ class ProfileController extends AdminController
             return null;
         }
 
-        return Db::table('mein_users as u')
-            ->leftJoin('mein_roles as r', 'u.role_id', '=', 'r.id')
+        return Db::table(panelTable('users') . ' as u')
+            ->leftJoin(panelTable('roles') . ' as r', 'u.role_id', '=', 'r.id')
             ->select('u.*', 'r.role_name')
             ->where('u.id', $id)
             ->first();

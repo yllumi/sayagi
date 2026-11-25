@@ -38,12 +38,12 @@ class RoleController extends AdminController
 
     private function db()
     {
-        return Db::table('mein_roles');
+        return Db::table(panelTable('roles'));
     }
 
     private function dbPriv()
     {
-        return Db::table('mein_role_privileges_webman');
+        return Db::table(panelTable('role_privileges'));
     }
 
     // ── GET /panel/role/index ──────────────────────────────
@@ -218,7 +218,7 @@ class RoleController extends AdminController
         }
 
         // Check if any user is assigned this role
-        $inUse = Db::table('mein_users')->where('role_id', $id)->exists();
+        $inUse = Db::table(panelTable('users'))->where('role_id', $id)->exists();
         if ($inUse) {
             return json(['success' => 0, 'message' => 'Role masih digunakan oleh user. Pindahkan user terlebih dahulu.']);
         }

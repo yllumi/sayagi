@@ -30,7 +30,7 @@ trait HandlesUserAvatar
 
         AvatarUploader::delete($user->avatar);
 
-        Db::table('mein_users')->where('id', $user->id)->update([
+        Db::table(panelTable('users'))->where('id', $user->id)->update([
             'avatar'     => $path,
             'updated_at' => date('Y-m-d H:i:s'),
         ]);
@@ -54,7 +54,7 @@ trait HandlesUserAvatar
     {
         AvatarUploader::delete($user->avatar);
 
-        Db::table('mein_users')->where('id', $user->id)->update([
+        Db::table(panelTable('users'))->where('id', $user->id)->update([
             'avatar'     => null,
             'updated_at' => date('Y-m-d H:i:s'),
         ]);

@@ -8,8 +8,8 @@ use Webman\Http\UploadFile;
  * Stores user avatars as square WebP files under public/uploads/avatars.
  *
  * Every upload is re-encoded through GD, which strips EXIF metadata and any
- * embedded payload. The public path stored in `mein_users.avatar` is the
- * relative URL consumed directly by `<img src>`.
+ * embedded payload. The public path stored in the users table's `avatar`
+ * column is the relative URL consumed directly by `<img src>`.
  */
 final class AvatarUploader
 {

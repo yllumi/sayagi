@@ -64,19 +64,33 @@ File utama setelah instalasi:
 config/plugin/panel/menu.yml              # menu sidebar
 config/plugin/panel/privileges.yml        # definisi privilege
 config/plugin/panel/settings/*.yml        # schema group setting
-config/plugin/yllumi/sayagi/app.php       # konfigurasi plugin
+config/plugin/yllumi/sayagi/app.php       # konfigurasi plugin + nama tabel panel
 app/view/overrides/                       # override template panel (opsional)
 ```
 
-`config/plugin/yllumi/sayagi/app.php`:
+`config/plugin/yllumi/sayagi/app.php` (hasil publish dari `vendor/yllumi/sayagi/src/config/app.php`):
 
 ```php
 return [
     'enable' => true,
     'site_title' => 'HeroicAdmin',
     'enable_registration' => getenv('app.enable_registration') === 'true' ? true : false,
+
+    // Nama tabel user/role/privilege — ubah bila skema database berbeda.
+    'tables' => [
+        'users'           => 'mein_users',
+        'user_profile'    => 'mein_user_profile',
+        'roles'           => 'mein_roles',
+        'role_privileges' => 'mein_role_privileges',
+    ],
 ];
 ```
+
+Semua query, migrasi, dan seeder memakai helper `panelTable('users'|'user_profile'|'roles'|'role_privileges')`,
+jadi cukup ubah `tables` — kode tidak perlu disentuh. Key yang tidak diisi memakai default `mein_*` di atas.
+
+> `sayagi:update` menyalin ulang seluruh `src/config/*.php` ke `config/plugin/yllumi/sayagi/`,
+> jadi catat nilai `tables` custom sebelum update.
 
 Aktifkan registrasi via `.env`:
 

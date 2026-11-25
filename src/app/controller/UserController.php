@@ -22,7 +22,7 @@ class UserController extends AdminController
     public function index(Request $request)
     {
         $this->data['page_title'] = 'Manajemen User';
-        $this->data['roles']      = Db::table('mein_roles')->orderBy('role_name')->get();
+        $this->data['roles']      = Db::table(panelTable('roles'))->orderBy('role_name')->get();
         return render('user/index', $this->data);
     }
 
@@ -51,8 +51,8 @@ class UserController extends AdminController
         $direction = strtolower((string) $request->input('dir', 'desc')) === 'asc' ? 'asc' : 'desc';
         $sortField = $sortable[$sort] ?? 'u.created_at';
 
-        $query = Db::table('mein_users as u')
-            ->leftJoin('mein_roles as r', 'u.role_id', '=', 'r.id')
+        $query = Db::table(panelTable('users') . ' as u')
+            ->leftJoin(panelTable('roles') . ' as r', 'u.role_id', '=', 'r.id')
             ->select('u.id', 'u.name', 'u.username', 'u.email', 'u.phone', 'u.status', 'u.role_id', 'r.role_name', 'u.created_at', 'u.avatar');
 
         if ($status && $status !== 'all') {
@@ -76,7 +76,7 @@ class UserController extends AdminController
             });
         }
 
-        $total    = Db::table('mein_users')->count();
+        $total    = Db::table(panelTable('users'))->count();
         $filtered = (clone $query)->count();
         $rows     = (clone $query)
             ->orderBy($sortField, $direction)
@@ -119,7 +119,7 @@ class UserController extends AdminController
     {
         $this->data['page_title'] = 'Tambah User';
         $this->data['user']       = null;
-        $this->data['roles']      = Db::table('mein_roles')->orderBy('role_name')->get();
+        $this->data['roles']      = Db::table(panelTable('roles'))->orderBy('role_name')->get();
         return render('user/form', $this->data);
     }
 
@@ -143,10 +143,10 @@ class UserController extends AdminController
         if (strlen($password) < 8) {
             return json(['success' => 0, 'message' => 'Password minimal 8 karakter.']);
         }
-        if (Db::table('mein_users')->where('email', $email)->exists()) {
+        if (Db::table(panelTable('users'))->where('email', $email)->exists()) {
             return json(['success' => 0, 'message' => 'Email sudah digunakan.']);
         }
-        if (Db::table('mein_users')->where('username', $username)->exists()) {
+        if (Db::table(panelTable('users'))->where('username', $username)->exists()) {
             return json(['success' => 0, 'message' => 'Username sudah digunakan.']);
         }
 
@@ -165,7 +165,7 @@ class UserController extends AdminController
         if(isAllow('user.set_role') && $role_id !== null) {
             $userData['role_id'] = $role_id;
         }
-        Db::table('mein_users')->insert($userData);
+        Db::table(panelTable('users'))->insert($userData);
 
         return json(['success' => 1, 'message' => 'User berhasil ditambahkan.', 'redirect' => site_url('/panel/user')]);
     }
@@ -174,7 +174,7 @@ class UserController extends AdminController
     public function edit(Request $request)
     {
         $id   = (int) $request->input('id', 0);
-        $user = Db::table('mein_users')->where('id', $id)->first();
+        $user = Db::table(panelTable('users'))->where('id', $id)->first();
 
         if (!$user) {
             return redirect(site_url('/panel/user'));
@@ -182,7 +182,7 @@ class UserController extends AdminController
 
         $this->data['page_title'] = 'Edit User';
         $this->data['user']       = $user;
-        $this->data['roles']      = Db::table('mein_roles')->orderBy('role_name')->get();
+        $this->data['roles']      = Db::table(panelTable('roles'))->orderBy('role_name')->get();
         return render('user/form', $this->data);
     }
 
@@ -204,10 +204,10 @@ class UserController extends AdminController
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             return json(['success' => 0, 'message' => 'Format email tidak valid.']);
         }
-        if (Db::table('mein_users')->where('email', $email)->where('id', '!=', $id)->exists()) {
+        if (Db::table(panelTable('users'))->where('email', $email)->where('id', '!=', $id)->exists()) {
             return json(['success' => 0, 'message' => 'Email sudah digunakan user lain.']);
         }
-        if (Db::table('mein_users')->where('username', $username)->where('id', '!=', $id)->exists()) {
+        if (Db::table(panelTable('users'))->where('username', $username)->where('id', '!=', $id)->exists()) {
             return json(['success' => 0, 'message' => 'Username sudah digunakan user lain.']);
         }
 
@@ -232,7 +232,7 @@ class UserController extends AdminController
             $payload['password'] = $Phpass->HashPassword($password);
         }
 
-        Db::table('mein_users')->where('id', $id)->update($payload);
+        Db::table(panelTable('users'))->where('id', $id)->update($payload);
 
         return json(['success' => 1, 'message' => 'User berhasil diperbarui.', 'redirect' => site_url('/panel/user/index')]);
     }
@@ -245,7 +245,7 @@ class UserController extends AdminController
             return json(['success' => 0, 'message' => 'ID tidak valid.']);
         }
 
-        $deleted = Db::table('mein_users')->where('id', $id)->update(['status' => 'deleted', 'updated_at' => date('Y-m-d H:i:s')]);
+        $deleted = Db::table(panelTable('users'))->where('id', $id)->update(['status' => 'deleted', 'updated_at' => date('Y-m-d H:i:s')]);
         if (!$deleted) {
             return json(['success' => 0, 'message' => 'User tidak ditemukan.']);
         }
@@ -279,6 +279,6 @@ class UserController extends AdminController
     {
         $id = (int) $request->input('id', 0);
 
-        return $id > 0 ? Db::table('mein_users')->where('id', $id)->first() : null;
+        return $id > 0 ? Db::table(panelTable('users'))->where('id', $id)->first() : null;
     }
 }

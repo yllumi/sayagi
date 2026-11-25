@@ -8,8 +8,10 @@ final class SayagiInitSeeder extends AbstractSeed
 {
     public function run(): void
     {
-        $rolesSql = <<<'SQL'
-INSERT INTO `mein_roles` (`id`, `role_name`, `role_slug`, `status`, `created_at`, `updated_at`) VALUES
+        $rolesTable = panelTable('roles');
+
+        $rolesSql = <<<SQL
+INSERT INTO `{$rolesTable}` (`id`, `role_name`, `role_slug`, `status`, `created_at`, `updated_at`) VALUES
 (1, 'Super', 'super', 'active', '2013-05-13 03:32:53', NULL),
 (2, 'Member', 'member', 'active', '2013-05-13 03:32:53', NULL)
 ON DUPLICATE KEY UPDATE

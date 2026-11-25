@@ -4,6 +4,36 @@
  * Here is your custom functions.
  */
 
+if (!function_exists('panelTable')) {
+    /**
+     * Resolve a panel table name.
+     *
+     * Names can be overridden per project in config/plugin/yllumi/sayagi/app.php:
+     *
+     *   'tables' => [
+     *       'users'           => 'my_users',
+     *       'user_profile'    => 'my_user_profile',
+     *       'roles'           => 'my_roles',
+     *       'role_privileges' => 'my_role_privileges',
+     *   ],
+     *
+     * Falls back to the shipped `mein_*` names when the config key is absent.
+     */
+    function panelTable(string $key): string
+    {
+        static $defaults = [
+            'users'           => 'mein_users',
+            'user_profile'    => 'mein_user_profile',
+            'roles'           => 'mein_roles',
+            'role_privileges' => 'mein_role_privileges',
+        ];
+
+        $name = config('plugin.yllumi.sayagi.app.tables.' . $key);
+
+        return is_string($name) && trim($name) !== '' ? trim($name) : ($defaults[$key] ?? $key);
+    }
+}
+
 if (!function_exists('sidebarMenus')) {
 function sidebarMenus()
 {
@@ -322,7 +352,7 @@ function rolePrivileges($roleId)
         return $cached;
     }
 
-    $privileges = support\Db::table('mein_role_privileges_webman')
+    $privileges = support\Db::table(panelTable('role_privileges'))
         ->select('feature', 'privilege')
         ->where('role_id', $roleId)
         ->get()

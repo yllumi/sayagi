@@ -384,13 +384,13 @@ class InstallAdmin extends Command
     }
 
     /**
-     * Tanya data user admin pertama lalu simpan ke mein_users.
+     * Tanya data user admin pertama lalu simpan ke tabel users.
      * Status langsung 'active', role_id = 1 (Super). Idempotent: dilewati
      * bila sudah ada user dengan role_id = 1.
      */
     protected function createFirstUser(InputInterface $input, OutputInterface $output): bool
     {
-        if (Db::table('mein_users')->where('role_id', 1)->exists()) {
+        if (Db::table(panelTable('users'))->where('role_id', 1)->exists()) {
             $output->writeln('<comment>[sayagi]</comment> Admin user already exists, skipping first user creation.');
             return true;
         }
@@ -417,12 +417,12 @@ class InstallAdmin extends Command
             return false;
         }
 
-        if (Db::table('mein_users')->where('email', $email)->exists()) {
+        if (Db::table(panelTable('users'))->where('email', $email)->exists()) {
             $output->writeln('<error>[sayagi]</error> Email sudah digunakan.');
             return false;
         }
 
-        if (Db::table('mein_users')->where('username', $username)->exists()) {
+        if (Db::table(panelTable('users'))->where('username', $username)->exists()) {
             $output->writeln('<error>[sayagi]</error> Username sudah digunakan.');
             return false;
         }
@@ -430,7 +430,7 @@ class InstallAdmin extends Command
         $phpass = new \Yllumi\Sayagi\libraries\Phpass();
         $now    = date('Y-m-d H:i:s');
 
-        Db::table('mein_users')->insert([
+        Db::table(panelTable('users'))->insert([
             'name'       => $name,
             'username'   => $username,
             'email'      => $email,

@@ -11,7 +11,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use support\Db;
 
-#[AsCommand('sayagi:user:create', 'Create a new user in mein_users table.')]
+#[AsCommand('sayagi:user:create', 'Create a new user.')]
 class CreateUser extends Command
 {
     protected function configure(): void
@@ -89,17 +89,17 @@ class CreateUser extends Command
             return Command::FAILURE;
         }
 
-        if (Db::table('mein_users')->where('email', $email)->exists()) {
+        if (Db::table(panelTable('users'))->where('email', $email)->exists()) {
             $output->writeln('<error>[sayagi]</error> Email sudah digunakan.');
             return Command::FAILURE;
         }
 
-        if (Db::table('mein_users')->where('username', $username)->exists()) {
+        if (Db::table(panelTable('users'))->where('username', $username)->exists()) {
             $output->writeln('<error>[sayagi]</error> Username sudah digunakan.');
             return Command::FAILURE;
         }
 
-        if ($roleId > 0 && !Db::table('mein_roles')->where('id', $roleId)->exists()) {
+        if ($roleId > 0 && !Db::table(panelTable('roles'))->where('id', $roleId)->exists()) {
             $output->writeln('<error>[sayagi]</error> Role ID tidak ditemukan: ' . $roleId);
             return Command::FAILURE;
         }
@@ -119,7 +119,7 @@ class CreateUser extends Command
             'updated_at' => $now,
         ];
 
-        Db::table('mein_users')->insert($payload);
+        Db::table(panelTable('users'))->insert($payload);
 
         $output->writeln('<info>[sayagi]</info> User berhasil dibuat: ' . $username . ' (' . $email . ')');
         return Command::SUCCESS;

@@ -30,7 +30,7 @@ class AuthController extends AdminController
             return json(['success' => 0, 'message' => 'Username dan password wajib diisi.']);
         }
 
-        $user = Db::table('mein_users')
+        $user = Db::table(panelTable('users'))
             ->where(function ($q) use ($username) {
                 $q->where('email', $username)->orWhere('username', $username);
             })
@@ -105,10 +105,10 @@ class AuthController extends AdminController
         }
 
         // Check uniqueness
-        if (Db::table('mein_users')->where('email', $email)->exists()) {
+        if (Db::table(panelTable('users'))->where('email', $email)->exists()) {
             return json(['success' => 0, 'message' => 'Email sudah terdaftar.']);
         }
-        if (Db::table('mein_users')->where('username', $username)->exists()) {
+        if (Db::table(panelTable('users'))->where('username', $username)->exists()) {
             return json(['success' => 0, 'message' => 'Username sudah digunakan.']);
         }
 
@@ -117,12 +117,12 @@ class AuthController extends AdminController
 
         $defaultRole = setting('user.user_registration_role', 'member');
         // Resolve role name to role_id
-        $role = Db::table('mein_roles')->where('name', $defaultRole)->first();
+        $role = Db::table(panelTable('roles'))->where('name', $defaultRole)->first();
         $roleId = $role ? $role->id : 0;
 
         $defaultStatus = setting('user.user_registration_status', 'active');
 
-        Db::table('mein_users')->insert([
+        Db::table(panelTable('users'))->insert([
             'name'       => $name,
             'email'      => $email,
             'username'   => $username,
@@ -172,7 +172,7 @@ class AuthController extends AdminController
         // Clear captcha from session to prevent reuse
         $request->session()->delete('captcha');
 
-        $user = Db::table('mein_users')
+        $user = Db::table(panelTable('users'))
             ->where('email', $email)
             ->first();
 
@@ -184,7 +184,7 @@ class AuthController extends AdminController
         $otp   = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
         $token = hash('sha256', $otp . $user->email . time());
 
-        Db::table('mein_users')
+        Db::table(panelTable('users'))
             ->where('id', $user->id)
             ->update([
                 'otp'        => $otp,
@@ -237,7 +237,7 @@ class AuthController extends AdminController
             return json(['success' => 0, 'message' => 'Konfirmasi password tidak cocok.']);
         }
 
-        $user = Db::table('mein_users')
+        $user = Db::table(panelTable('users'))
             ->where('token', $token)
             ->where('otp', $otp)
             ->first();
@@ -247,7 +247,7 @@ class AuthController extends AdminController
         }
 
         $Phpass = new \Yllumi\Sayagi\libraries\Phpass();
-        Db::table('mein_users')
+        Db::table(panelTable('users'))
             ->where('id', $user->id)
             ->update([
                 'password'   => $Phpass->HashPassword($password),

@@ -21,8 +21,8 @@ class DashboardController extends AdminController
 
         $this->data['page_title'] = 'Dashboard';
         $this->data['user_name'] = $sessionUser['name'] ?? $sessionUser['username'] ?? 'User';
-        $this->data['active_users'] = (int) Db::table('mein_users')->where('status', 'active')->count();
-        $this->data['inactive_users'] = (int) Db::table('mein_users')->where('status', 'inactive')->count();
+        $this->data['active_users'] = (int) Db::table(panelTable('users'))->where('status', 'active')->count();
+        $this->data['inactive_users'] = (int) Db::table(panelTable('users'))->where('status', 'inactive')->count();
 
         return render('dashboard/index', $this->data);
     }
