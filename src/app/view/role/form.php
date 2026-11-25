@@ -116,19 +116,23 @@ $rolePrivsJson = json_encode($role_privs ?? []);
                                     $parts = explode('.', $priv);
                                     $label = $parts[1] ?? $priv;
                                 ?>
-                                <div class="col-6 col-sm-4 col-md-3">
+                                <div class="col-12 col-sm-6 col-md-4">
                                     <label
-                                        class="d-flex align-items-center gap-2 border rounded px-2 py-2 cursor-pointer"
+                                        class="d-flex align-items-start gap-2 border rounded px-2 py-2 h-100"
                                         :class="checkedPrivs.includes('<?= $priv ?>') ? 'border-primary bg-primary bg-opacity-10' : 'border-light bg-light bg-opacity-50'"
-                                        style="cursor:pointer"
-                                        <?= $description ? 'title="' . htmlspecialchars($description) . '"' : '' ?>>
+                                        style="cursor:pointer">
                                         <input
                                             type="checkbox"
-                                            class="form-check-input m-0 flex-shrink-0"
+                                            class="form-check-input m-0 mt-1 flex-shrink-0"
                                             value="<?= $priv ?>"
                                             :checked="checkedPrivs.includes('<?= $priv ?>')"
                                             @change="togglePriv('<?= $priv ?>', $event.target.checked)">
-                                        <span class="small"><?= $label ?></span>
+                                        <span class="d-flex flex-column gap-1">
+                                            <span class="small fw-medium"><?= $label ?></span>
+                                            <?php if ($description): ?>
+                                            <span class="text-muted" style="font-size:.72rem;line-height:1.3"><?= htmlspecialchars($description) ?></span>
+                                            <?php endif; ?>
+                                        </span>
                                     </label>
                                 </div>
                                 <?php endforeach; ?>
